@@ -6,7 +6,7 @@
 
 
 // @namespace    http://tampermonkey.net/
-// @version      1.1
+// @version      1.1.2
 // @match        https://monkeytype.com/*
 // @grant        none
 // 
@@ -46,6 +46,10 @@
         });
         if(response.status == 429) {
         	console.log("Encountered 429, assuming next quote");
+        	return null;
+        }
+        if(response.status == 401 || response.status == 403 || response.status == 404) {
+        	alert(`Encountered a ${response.status} error. Please relogin or report an issue if the problem persists. Contact: github.com/brentspine`);
         	return null;
         }
         const data = await response.json();
@@ -138,10 +142,17 @@
     }
 
     function getMtState() {
+    	const pageLoading = document.getElementById("pageLoading");
         const typingTest = document.getElementById("typingTest");
-        if(typingTest === null || typingTest === undefined) return "result";
+        const pageAccount = document.getElementById("pageAccount");
+        const result = document.getElementById("result");
+        
+        if(pageLoading !== null && pageLoading !== undefined) return "loading";
+        if(typingTest === null || typingTest === undefined) return "account";
         const typingTestOpacity = getStyleOfObjectFloat(typingTest, "opacity");
         if(typingTestOpacity > 0) return "typing";
+        const pageAccountOpacity = getStyleOfObjectFloat(pageAccount, "opacity");
+        if(pageAccountOpacity > 0) return "account";
         return "result";
     }
     
@@ -167,6 +178,8 @@
     }
 
     async function nextQuote() {
+    	const mtState = getMtState();
+    	if(mtState !== "typing" && mtState !== "result") return;
         let quotes = getStoredQuotes();
         if (!quotes) {
             quotes = await fetchQuotes();
@@ -200,9 +213,15 @@
         }
     }
 
+	localStorage.setItem(LOCAL_STORAGE_KEY_PREFIX+"quote_init", false);
     setTimeout(main, 1000);
     setInterval(function() {
         if(getMtState() !== "typing") return;
+        if(localStorage.getItem(LOCAL_STORAGE_KEY_PREFIX+"quote_init") == "false") {
+        	nextQuote();
+        	localStorage.setItem(LOCAL_STORAGE_KEY_PREFIX+"quote_init", true);
+        	console.log("Quote Init");
+        }
         if(!isModeActive("quote")) return;
         var quoteId = null;
         const premid = document.getElementById("premidTestMode");
@@ -218,9 +237,23 @@
         	const currentQuoteId = parseInt(quoteIdNotice.innerHTML.replace(/^\D+/, ""), 10);
         	if(quoteId == currentQuoteId) return;
         	quoteIdNotice.innerHTML = `Quote ID: ${quoteId}`;
+        	localStorage.setItem(LOCAL_STORAGE_KEY_PREFIX+"active_quote", quoteId);
         	return;
         }
+        localStorage.setItem(LOCAL_STORAGE_KEY_PREFIX+"active_quote", quoteId);
         var newButton = `<button class="textButton" id="quote-id-notice">Quote ID: ${quoteId}</button>`;
         document.getElementById("testModesNotice").innerHTML += newButton;
+        document.getElementById("quote-id-notice").addEventListener("click", function() {
+        	var quoteId = localStorage.getItem(LOCAL_STORAGE_KEY_PREFIX+"last_quote_id");
+        	if(quoteId === null || quoteId === undefined) return;
+        	var activeQuote = localStorage.getItem(LOCAL_STORAGE_KEY_PREFIX+"active_quote");
+        	if(activeQuote === null) {
+        		startNextQuote(parseInt(quoteId));
+        		return;
+        	}
+        	activeQuote = parseInt(activeQuote);
+        	if(activeQuote == quoteId) return;
+        	startNextQuote(parseInt(quoteId));
+        });
     }, QUOTE_ID_NOTICE_INTERVAL);
 })();
