@@ -43,6 +43,9 @@ You can pin the extension for better use if you want. Click the icon to open up 
 Go to the [latest release](https://github.com/brentspine/monkeytype-quote-queue/releases/tag/release) and copy the contents of the appended JS file. Then paste them into the window you just opened. Press save or use CTRL+S.
 
 <img src="https://github.com/brentspine/monkeytype-quote-queue/assets/55391576/489e0063-dd6b-425b-881e-1cea605a986d" height=400>
+
+Close the extension window and reload MonkeyType. The changes should successfully be applied.
+
 <br><i>You might need to reload the page twice due to a init bug. This will only occur once</i>
 
 <i> You can turn off the extension at any time by using the respective dialog as <a href="https://github.com/brentspine/monkeytype-quote-queue/assets/55391576/98ecee87-cf95-4a96-93fd-50db753cb968" target="_blank">seen here</a></i>
