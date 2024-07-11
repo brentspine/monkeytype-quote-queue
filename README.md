@@ -2,7 +2,15 @@
 
 User script to add the "next quote" option. This allows you to type out all quotes after each other. The script actively checks for previous completion.
 
-# Usage
+## Table of contents
+**[1. Usage](#usage)**<br>
+**&nbsp;&nbsp;&nbsp;&nbsp;[1.1 Filtering](#usage-filtering)**<br>
+**[2. Install](#install)**<br>
+**[3. Feature Requests](#feature-requests)**<br>
+**[4. Troubleshoot](#troubleshoot)**<br>
+
+
+## Usage <span id="usage"></span>
 
 Note: You can turn off the extension at any time by using the respective dialog as <a href="https://github.com/brentspine/monkeytype-quote-queue/assets/55391576/98ecee87-cf95-4a96-93fd-50db753cb968" target="_blank">seen here</a>
 
@@ -12,14 +20,14 @@ After completing a test, you can use the "Next Quote" button to, as you might ha
 
 ![gflkhjndflkgjnhldfkgjnhldkfjgnhldkfgjhn](https://github.com/brentspine/monkeytype-quote-queue/assets/55391576/cf8d9f98-95f9-463e-bc93-9fcbd9584c16)
 
-### Filtering
+### Filtering <span id="usage-filtering"></span>
 
 You can set a start timestamp for quote completion check. That means that quotes before that timestamp do not count into your completion percentage or general progress. This number is in <b>milliseconds</b>, this is important. You can get the current timestamp in milliseconds [here](https://brentspine.de/tools/live-timestamp/) or [here](https://currentmillis.com/).
 
 <img src="https://github.com/brentspine/monkeytype-quote-queue/assets/55391576/6fc396f0-d2ab-4470-accc-3396c5c1e6f9" height=400>
 
 
-# Install
+## Install <span id="install"></span>
 
 ### Using "User Javascript and CSS" extension
 
@@ -38,3 +46,13 @@ Go to the [latest release](https://github.com/brentspine/monkeytype-quote-queue/
 <br><i>You might need to reload the page twice due to a init bug. This will only occur once</i>
 
 <i> You can turn off the extension at any time by using the respective dialog as <a href="https://github.com/brentspine/monkeytype-quote-queue/assets/55391576/98ecee87-cf95-4a96-93fd-50db753cb968" target="_blank">seen here</a></i>
+
+## Feature Requests <span id="feature-requests"></span>
+
+I love hearing your ideas! Thanks for using this extension. For new feature suggestions, please consider [opening an issue](https://github.com/brentspine/monkeytype-quote-queue/issues) here on GitHub.
+
+You can also reach out to me on Discord (@brentspine) or check out [my Linktree](https://linktr.ee/brentspine) for other ways to connect and discuss your feature suggestions.
+
+## Still have problems or questions? <span id="troubleshoot"></span>
+
+If you still have problems you can open an [issue](https://github.com/brentspine/monkeytype-quote-queue/issues) or [contact me](https://linktr.ee/brentspine).
