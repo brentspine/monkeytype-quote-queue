@@ -6,7 +6,7 @@
 
 
 // @namespace    http://tampermonkey.net/
-// @version      1.0
+// @version      1.1
 // @match        https://monkeytype.com/*
 // @grant        none
 // 
@@ -15,10 +15,12 @@
 (async function() {
     'use strict';
 
+    const START_TIMESTAMP = 1720647438000;
+    const QUOTE_ID_NOTICE_INTERVAL = 200;
+    
     const QUOTES_URL = 'https://monkeytype.com/quotes/english.json';
     const COMPLETED_QUOTES_URL = 'https://api.monkeytype.com/results';
     const LOCAL_STORAGE_KEY_PREFIX = 'bqp_';
-    const START_TIMESTAMP = 0;
 
     function getStyleOfObjectFloat(object, styleType) {
         if (object && object.style) {
@@ -96,6 +98,8 @@
                 console.log("Next quote: Failed after 3 attempts");
                 return;
             }
+            const quote_button = document.querySelector(`#testConfig button[mode="quote"]`);
+        	doClick(quote_button);
             const search_button = document.querySelector(`#testConfig button[quotelength="-2"]`);
             console.log("Triggering click on search_button:");
             doClick(search_button);
@@ -139,6 +143,10 @@
         const typingTestOpacity = getStyleOfObjectFloat(typingTest, "opacity");
         if(typingTestOpacity > 0) return "typing";
         return "result";
+    }
+    
+    function isModeActive(mode) {
+    	return document.querySelector(`#testConfig button[mode="${mode}"].active`) !== null;
     }
 
     const authToken = await getAuthToken();
@@ -194,6 +202,25 @@
 
     setTimeout(main, 1000);
     setInterval(function() {
-        //console.log(getMtState());
-    }, 500);
+        if(getMtState() !== "typing") return;
+        if(!isModeActive("quote")) return;
+        var quoteId = null;
+        const premid = document.getElementById("premidTestMode");
+        if(premid === undefined || premid === null) {
+        	quoteId = localStorage.getItem(LOCAL_STORAGE_KEY_PREFIX+"last_quote_id");
+        	if(quoteId === undefined || quoteId === null) return;
+        } else {
+        	const numberStr = premid.innerHTML.replace(/^\D+/, "");
+        	quoteId = parseInt(numberStr, 10);
+        }
+        const quoteIdNotice = document.getElementById("quote-id-notice");
+        if(quoteIdNotice !== null) {
+        	const currentQuoteId = parseInt(quoteIdNotice.innerHTML.replace(/^\D+/, ""), 10);
+        	if(quoteId == currentQuoteId) return;
+        	quoteIdNotice.innerHTML = `Quote ID: ${quoteId}`;
+        	return;
+        }
+        var newButton = `<button class="textButton" id="quote-id-notice">Quote ID: ${quoteId}</button>`;
+        document.getElementById("testModesNotice").innerHTML += newButton;
+    }, QUOTE_ID_NOTICE_INTERVAL);
 })();
