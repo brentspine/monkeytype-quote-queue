@@ -2,6 +2,23 @@
 
 User script to add the "next quote" option. This allows you to type out all quotes after each other. The script actively checks for previous completion.
 
+# Usage
+
+Note: You can turn off the extension at any time by using the respective dialog as <a href="https://github.com/brentspine/monkeytype-quote-queue/assets/55391576/98ecee87-cf95-4a96-93fd-50db753cb968" target="_blank">seen here</a>
+
+After enabling the extension head to "quotes" and reload the page to be safe. The extension will fetch all your results and all quotes and search for the first non-completed one. It will automatically start the test for that quote. It goes ordered by ID. I can maybe add sorting by length or other things if needed. Just [open an issue](https://github.com/brentspine/monkeytype-quote-queue/issues).
+
+After completing a test, you can use the "Next Quote" button to, as you might have guesses, go to the next queued quote.
+
+![gflkhjndflkgjnhldfkgjnhldkfjgnhldkfgjhn](https://github.com/brentspine/monkeytype-quote-queue/assets/55391576/cf8d9f98-95f9-463e-bc93-9fcbd9584c16)
+
+### Filtering
+
+You can set a start timestamp for quote completion check. That means that quotes before that timestamp do not count into your completion percentage or general progress. This number is in <b>milliseconds</b>, this is important. You can get the current timestamp in milliseconds [here](https://brentspine.de/tools/live-timestamp/) or [here](https://currentmillis.com/).
+
+<img src="https://github.com/brentspine/monkeytype-quote-queue/assets/55391576/6fc396f0-d2ab-4470-accc-3396c5c1e6f9" height=400>
+
+
 # Install
 
 ### Using "User Javascript and CSS" extension
@@ -16,5 +33,8 @@ You can pin the extension for better use if you want. Click the icon to open up 
 ![ezgif com-animated-gif-maker](https://github.com/brentspine/monkeytype-quote-queue/assets/55391576/98ecee87-cf95-4a96-93fd-50db753cb968)
 
 Go to the [latest release](https://github.com/brentspine/monkeytype-quote-queue/releases/tag/release) and copy the contents of the appended JS file. Then paste them into the window you just opened. Press save or use CTRL+S.
-![image](https://github.com/brentspine/monkeytype-quote-queue/assets/55391576/489e0063-dd6b-425b-881e-1cea605a986d)
-<i>You might need to reload the page twice due to a init bug. This will only occur once</i>
+
+<img src="https://github.com/brentspine/monkeytype-quote-queue/assets/55391576/489e0063-dd6b-425b-881e-1cea605a986d" height=400>
+<br><i>You might need to reload the page twice due to a init bug. This will only occur once</i>
+
+<i> You can turn off the extension at any time by using the respective dialog as <a href="https://github.com/brentspine/monkeytype-quote-queue/assets/55391576/98ecee87-cf95-4a96-93fd-50db753cb968" target="_blank">seen here</a></i>
