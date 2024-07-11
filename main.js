@@ -18,7 +18,7 @@
     const QUOTES_URL = 'https://monkeytype.com/quotes/english.json';
     const COMPLETED_QUOTES_URL = 'https://api.monkeytype.com/results';
     const LOCAL_STORAGE_KEY_PREFIX = 'bqp_';
-    const START_TIMESTAMP = 1720647438000;
+    const START_TIMESTAMP = 0;
 
     function getStyleOfObjectFloat(object, styleType) {
         if (object && object.style) {
