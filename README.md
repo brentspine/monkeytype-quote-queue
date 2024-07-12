@@ -5,6 +5,7 @@ User script to add the "next quote" option. This allows you to type out all quot
 ## Table of contents
 **[1. Usage](#usage)**<br>
 **&nbsp;&nbsp;&nbsp;&nbsp;[1.1 Filtering](#usage-filtering)**<br>
+**&nbsp;&nbsp;&nbsp;&nbsp;[1.2 Language Options](#language-options)**<br>
 **[2. Install](#install)**<br>
 **[3. Feature Requests](#feature-requests)**<br>
 **[4. Troubleshoot](#troubleshoot)**<br>
@@ -26,6 +27,15 @@ You can set a start timestamp for quote completion check. That means that quotes
 
 <img src="https://github.com/brentspine/monkeytype-quote-queue/assets/55391576/6fc396f0-d2ab-4470-accc-3396c5c1e6f9" height=400>
 
+### Language options <span id="language-options"></span>
+
+You can change the target quote language in the config. You can find the config at the beginning of the script. Make sure it is:
+ 1. A valid language on monkeytype
+ 2. Written in lowercase
+ 3. And you have selected the correct language in MonkeyType
+
+⚠ Quote Results do not store their source language. This means the program can't make out a difference between, for example, the german quote 42 and the english quote 42. You can try to change the <a href="#usage-filtering">start timestamp</a> to fix this<br>
+⚠ Before changing the language in the config, please make sure you have the correct language selected in MonkeyType
 
 ## Install <span id="install"></span>
 
