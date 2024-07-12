@@ -6,7 +6,7 @@
 
 
 // @namespace    http://tampermonkey.net/
-// @version      1.1.2
+// @version      1.1.3
 // @match        https://monkeytype.com/*
 // @grant        none
 // 
@@ -17,10 +17,16 @@
 
     const START_TIMESTAMP = 1720647438000;
     const QUOTE_ID_NOTICE_INTERVAL = 200;
+
+    // Quote Results do not store their source language. This means the program can't make out a difference between, for example, the german quote 42 and the english quote 42.
+    // Before changing the language in the config, please make sure you have the correct language selected in MonkeyType
+    const QUOTES_LANGUAGE = "english";
     
-    const QUOTES_URL = 'https://monkeytype.com/quotes/english.json';
+    const QUOTES_URL = `https://monkeytype.com/quotes/${QUOTES_LANGUAGE}.json`;
     const COMPLETED_QUOTES_URL = 'https://api.monkeytype.com/results';
     const LOCAL_STORAGE_KEY_PREFIX = 'bqp_';
+    
+    const STATES = ["loading", "login", "account", "typing", "result"];
 
     function getStyleOfObjectFloat(object, styleType) {
         if (object && object.style) {
@@ -34,6 +40,10 @@
     
     async function fetchQuotes() {
         const response = await fetch(QUOTES_URL);
+        if(response.status > 299) {
+        	alert(`Encountered a ${response.status} error while fetching quotes. Please check your configuration.`)
+        	return null;
+        }
         const data = await response.json();
         return data.quotes;
     }
@@ -59,11 +69,11 @@
     }
 
     function storeQuotesInLocalStorage(quotes) {
-        localStorage.setItem(`${LOCAL_STORAGE_KEY_PREFIX}quotes`, JSON.stringify(quotes));
+        localStorage.setItem(`${LOCAL_STORAGE_KEY_PREFIX}quotes_${QUOTES_LANGUAGE}`, JSON.stringify(quotes));
     }
 
     function getStoredQuotes() {
-        const quotes = localStorage.getItem(`${LOCAL_STORAGE_KEY_PREFIX}quotes`);
+        const quotes = localStorage.getItem(`${LOCAL_STORAGE_KEY_PREFIX}quotes_${QUOTES_LANGUAGE}`);
         return quotes ? JSON.parse(quotes) : null;
     }
 
@@ -100,6 +110,12 @@
             console.log(`Quote not loaded, attempt ${attempt}`);
             if(attempt >= 3) {
                 console.log("Next quote: Failed after 3 attempts");
+                const languagesButton = document.querySelector(`#testModesNotice button[commands="languages"]`);
+                let selectedLang = "unknown";
+                if(languagesButton !== null && languagesButton !== undefined) {
+                	selectedLang = languagesButton.innerHTML.replace(`<i class="fas fa-globe-americas"></i>`, "");
+                }
+                alert(`Couldn't find quote with id ${quoteId} while activating. Do you have the correct language selected? Config Language: ${QUOTES_LANGUAGE}, Selected Language: ${selectedLang}`);
                 return;
             }
             const quote_button = document.querySelector(`#testConfig button[mode="quote"]`);
@@ -116,6 +132,19 @@
         localStorage.setItem(LOCAL_STORAGE_KEY_PREFIX+"last_quote_id", quoteId);
         console.log(`Triggered click for quote ID: ${quoteId}`);
     }
+
+	async function waitForAnyState(desiredStates, checkInterval = 100) {
+	    return new Promise(resolve => {
+	        const checkState = () => {
+	            if (!desiredStates.includes(getMtState())) {
+	                setTimeout(checkState, checkInterval);
+	            } else {
+	                resolve();
+	            }
+	        };
+	        checkState();
+	    });
+	}
 
     async function getAuthToken() {
         return new Promise((resolve, reject) => {
@@ -134,6 +163,7 @@
                     if (result) {
                         resolve(result.value.stsTokenManager.accessToken);
                     } else {
+                    	alert("Auth token not found in firebaseLocalStorageDb, please reload the page or report an issue if the problem persists. Contact: github.com/brentspine")
                         reject('Auth token not found');
                     }
                 };
@@ -146,8 +176,13 @@
         const typingTest = document.getElementById("typingTest");
         const pageAccount = document.getElementById("pageAccount");
         const result = document.getElementById("result");
+        const pageLogin = document.getElementById("pageLogin");
         
         if(pageLoading !== null && pageLoading !== undefined) return "loading";
+        if(pageLogin !== null && pageLogin !== undefined) {
+        	const pageLoginOpacity = getStyleOfObjectFloat(pageLogin, "opacity");
+    		if(pageLoginOpacity > 0) return "login";
+        }
         if(typingTest === null || typingTest === undefined) return "account";
         const typingTestOpacity = getStyleOfObjectFloat(typingTest, "opacity");
         if(typingTestOpacity > 0) return "typing";
@@ -160,8 +195,18 @@
     	return document.querySelector(`#testConfig button[mode="${mode}"].active`) !== null;
     }
 
-    const authToken = await getAuthToken();
+    let authToken;
     async function main() {
+    	if(getMtState() == "login") {
+    		await waitForAnyState(STATES.filter(s => s !== "loading" && s !== "login"));
+    		setTimeout(function() {
+    			console.log("Reloading after login");
+    			window.location.reload();
+    		}, 1000);
+    		return;
+    	}
+    	await waitForAnyState(STATES.filter(s => s !== "loading" && s !== "login"));
+    	authToken = await getAuthToken();
     	localStorage.setItem(LOCAL_STORAGE_KEY_PREFIX+"last_quote_id", null);
         let newButton = document.getElementById("saveScreenshotButton").outerHTML;
         newButton = newButton
