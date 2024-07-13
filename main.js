@@ -6,7 +6,7 @@
 
 
 // @namespace    http://tampermonkey.net/
-// @version      1.2.1
+// @version      1.2.2
 // @match        https://monkeytype.com/*
 // @grant        none
 // 
@@ -270,9 +270,7 @@
                 allQuotes.filter(quote => quote.id.toString() === result.mode2).forEach(quote => {
                     wordsTyped += quote.text.split(" ").length + 1;
                     charsTyped += quote.length;
-                    console.log(quote);
                 });
-                console.log(timePlayed, wordsTyped, charsTyped);
             }
             const days = Math.floor(timePlayed / (60 * 60 * 24));
             const hours = Math.floor(timePlayed / (60 * 60)) % 24;
@@ -283,10 +281,10 @@
         const completionPercentage = ((completedQuotes / totalQuotes) * 100).toFixed(2);
     	let modal = `<dialog id="bqp-modal" class="modalWrapper" style="opacity: 1;"><div class="modal" style="opacity: 1; background: var(--bg-color);border-radius: var(--roundness);padding: 2rem;display: grid;gap: 1rem;width: 80vw;max-width: 1000px;height: 80vh;grid-template-rows: auto auto auto 1fr;">
     		<div style="display: flex; flex-direction: row; justify-content: space-between;align-items:center;"><h2>Quote Progress</h2><h3 id="bqp-close" style="cursor:pointer">&times;</h3></div>
-            <label for="start-timestamp">Start Timestamp (ms):</label>
+            <div style="display: flex; flex-direction: row; justify-content: space-between;align-items:center;"><label for="start-timestamp">Start Timestamp (ms):</label><a href="https://currentmillis.com" target="_blank">Current Timestamp</a></div>
             <input type="number" id="start-timestamp" value=${startTimestamp}>
             <div>
-                <div style="display: flex; flex-direction: row; justify-content: space-between;align-items:center;"><p id="completed-quotes">Completed Quotes: ${completedQuotes}/${totalQuotes} (${completionPercentage}%)</p><a href="https://currentmillis.com" target="_blank">Current Timestamp</a></div>
+                <p id="completed-quotes">Completed Quotes: ${completedQuotes}/${totalQuotes} (${completionPercentage}%)</p>
                 <p id="words-typed">Time typed: ${timePlayedString}</p>
                 <p id="words-typed">Words typed: ${wordsTyped.toLocaleString()}</p>
                 <p id="words-typed">Chars typed: ${charsTyped.toLocaleString()}</p>
@@ -297,6 +295,14 @@
     	</div></dialog>`;
     	document.getElementById("popups").innerHTML += modal;
         document.getElementById("bqp-close").addEventListener("click", function() {
+            if(document.getElementById("bqp-close").dataset.confirm === 'true') return;
+            const oldStartTimestamp = localStorage.getItem(LOCAL_STORAGE_KEY_PREFIX+"start_timstamp");
+            const newStartTimestamp = document.getElementById("start-timestamp").value;
+            if(oldStartTimestamp != newStartTimestamp) {
+                document.getElementById("bqp-close").innerHTML = `Discard? <span style='color:red' onclick="document.getElementById('bqp-modal').outerHTML = '';">&#10003;</span> <span style='color:green' onclick="document.getElementById('bqp-close').innerHTML='&times;';setTimeout(function() {document.getElementById('bqp-close').dataset.confirm = 'false';}, 100);">&times;</span>`;
+                document.getElementById("bqp-close").dataset.confirm = 'true';
+                return;
+            }
         	document.getElementById("bqp-modal").outerHTML = "";
         });
         document.getElementById("next-quote").addEventListener("click", function() {
