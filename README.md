@@ -4,11 +4,13 @@ User script to add the "next quote" option. This allows you to type out all quot
 
 ## Table of contents
 **[1. Usage](#usage)**<br>
-**&nbsp;&nbsp;&nbsp;&nbsp;[1.1 Filtering](#usage-filtering)**<br>
-**&nbsp;&nbsp;&nbsp;&nbsp;[1.2 Language Options](#language-options)**<br>
-**[2. Install](#install)**<br>
-**[3. Feature Requests](#feature-requests)**<br>
-**[4. Troubleshoot](#troubleshoot)**<br>
+**[2. Config and Stats](#config-stats)**<br>
+**&nbsp;&nbsp;&nbsp;&nbsp;[2.1 Stats](#stats)**<br>
+**&nbsp;&nbsp;&nbsp;&nbsp;[2.2 Filtering](#usage-filtering)**<br>
+**&nbsp;&nbsp;&nbsp;&nbsp;[2.3 Language Options](#language-options)**<br>
+**[3. Install](#install)**<br>
+**[4. Feature Requests](#feature-requests)**<br>
+**[5. Troubleshoot](#troubleshoot)**<br>
 
 
 ## Usage <span id="usage"></span>
@@ -20,16 +22,34 @@ After enabling the extension head to "quotes" and reload the page to be safe. Th
 After completing a test, you can use the "Next Quote" button to, as you might have guesses, go to the next queued quote.
 
 ![gflkhjndflkgjnhldfkgjnhldkfjgnhldkfgjhn](https://github.com/brentspine/monkeytype-quote-queue/assets/55391576/cf8d9f98-95f9-463e-bc93-9fcbd9584c16)
+<i>Read about settings/config and stats below</i>
+
+## Config and Stats <span id="config-stats"></span>
+
+You can access the config by pressing the current Quote display at the top of the typing test. 
+
+<img src="https://github.com/user-attachments/assets/92c8d00c-75b9-4211-ac5e-78052efb2023" height=190><br>
+<i>The current quote id is only displayed in quote mode</i>
+
+
+### Stats <span id="stats"></span>
+
+I have currently implemented the following 4 stat counters: 
+ 1. Completed Quotes: amount / total (percentage%)
+ 2. Time Typed: Days, hours, minutes (+seconds if days<1)
+ 3. Words Typed
+ 4. Chars Typed
 
 ### Filtering <span id="usage-filtering"></span>
 
 You can set a start timestamp for quote completion check. That means that quotes before that timestamp do not count into your completion percentage or general progress. This number is in <b>milliseconds</b>, this is important. You can get the current timestamp in milliseconds [here](https://brentspine.de/tools/live-timestamp/) or [here](https://currentmillis.com/).
 
-<img src="https://github.com/brentspine/monkeytype-quote-queue/assets/55391576/6fc396f0-d2ab-4470-accc-3396c5c1e6f9" height=400>
+<img src="https://github.com/user-attachments/assets/04730835-c9dd-4ab6-995f-1ce41c02eaaf" height=400>
+
 
 ### Language options <span id="language-options"></span>
 
-You can change the target quote language in the config. You can find the config at the beginning of the script. Make sure it is:
+You can change the target language at the beginning of the script. Just change the value of the QUOTES_LANGUAGE variable to a lower case language key.
  1. A valid language on monkeytype
  2. Written in lowercase
  3. And you have selected the correct language in MonkeyType
