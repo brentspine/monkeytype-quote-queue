@@ -6,7 +6,7 @@
 
 
 // @namespace    http://tampermonkey.net/
-// @version      1.1.3
+// @version      1.1.4
 // @match        https://monkeytype.com/*
 // @grant        none
 // 
@@ -48,7 +48,7 @@
         return data.quotes;
     }
 
-    async function fetchCompletedQuotes(authToken) {
+    async function fetchCompletedQuotes(authToken, attempt=1) {
         const response = await fetch(COMPLETED_QUOTES_URL, {
             headers: {
                 'Authorization': `Bearer ${authToken}`
@@ -59,6 +59,10 @@
         	return null;
         }
         if(response.status == 401 || response.status == 403 || response.status == 404) {
+        	authToken = await getAuthToken();
+        	if(attempt <= 2) {
+        		return fetchCompletedQuotes(authToken, attempt+1);
+        	}
         	alert(`Encountered a ${response.status} error. Please relogin or report an issue if the problem persists. Contact: github.com/brentspine`);
         	return null;
         }
@@ -147,29 +151,48 @@
 	}
 
     async function getAuthToken() {
-        return new Promise((resolve, reject) => {
-            const openRequest = indexedDB.open('firebaseLocalStorageDb');
+	    return new Promise((resolve, reject) => {
+	        const openRequest = indexedDB.open('firebaseLocalStorageDb');
+	
+	        openRequest.onerror = () => reject(openRequest.error);
+	        openRequest.onsuccess = () => {
+	            const db = openRequest.result;
+	            const transaction = db.transaction('firebaseLocalStorage', 'readonly');
+	            const store = transaction.objectStore('firebaseLocalStorage');
+	            const request = store.getAll();
+	
+	            request.onerror = () => reject(request.error);
+	            request.onsuccess = () => {
+	                const result = request.result.find(entry => entry.fbase_key.startsWith('firebase:authUser:'));
+	                if (result) {
+	                    resolve(result.value.stsTokenManager.accessToken);
+	                } else {
+	                    // Check localStorage if not found in indexedDB
+	                    const localStorageAuthToken = getAuthTokenFromLocalStorage();
+	                    if (localStorageAuthToken) {
+	                        resolve(localStorageAuthToken);
+	                    } else {
+	                        alert("Auth token not found in firebaseLocalStorageDb or localStorage. Please reload the page or report an issue if the problem persists. Contact: github.com/brentspine");
+	                        reject('Auth token not found');
+	                    }
+	                }
+	            };
+	        };
+	    });
+	}
 
-            openRequest.onerror = () => reject(openRequest.error);
-            openRequest.onsuccess = () => {
-                const db = openRequest.result;
-                const transaction = db.transaction('firebaseLocalStorage', 'readonly');
-                const store = transaction.objectStore('firebaseLocalStorage');
-                const request = store.getAll();
+	function getAuthTokenFromLocalStorage() {
+	    for (let key in localStorage) {
+	        if (localStorage.hasOwnProperty(key) && key.startsWith('firebase:authUser:')) {
+	            const authData = JSON.parse(localStorage.getItem(key));
+	            if (authData && authData.stsTokenManager && authData.stsTokenManager.accessToken) {
+	                return authData.stsTokenManager.accessToken;
+	            }
+	        }
+	    }
+	    return null;
+	}
 
-                request.onerror = () => reject(request.error);
-                request.onsuccess = () => {
-                    const result = request.result.find(entry => entry.fbase_key.startsWith('firebase:authUser:'));
-                    if (result) {
-                        resolve(result.value.stsTokenManager.accessToken);
-                    } else {
-                    	alert("Auth token not found in firebaseLocalStorageDb, please reload the page or report an issue if the problem persists. Contact: github.com/brentspine")
-                        reject('Auth token not found');
-                    }
-                };
-            };
-        });
-    }
 
     function getMtState() {
     	const pageLoading = document.getElementById("pageLoading");
@@ -194,6 +217,9 @@
     function isModeActive(mode) {
     	return document.querySelector(`#testConfig button[mode="${mode}"].active`) !== null;
     }
+    
+    const sleep = ms =>
+		new Promise(resolve => setTimeout(resolve, ms));
 
     let authToken;
     async function main() {
@@ -205,9 +231,9 @@
     		}, 1000);
     		return;
     	}
-    	await waitForAnyState(STATES.filter(s => s !== "loading" && s !== "login"));
-    	authToken = await getAuthToken();
     	localStorage.setItem(LOCAL_STORAGE_KEY_PREFIX+"last_quote_id", null);
+    	// await waitForAnyState(STATES.filter(s => s !== "loading" && s !== "login"));
+    	authToken = await getAuthToken();
         let newButton = document.getElementById("saveScreenshotButton").outerHTML;
         newButton = newButton
             .replaceAll("saveScreenshotButton", "nextQuoteButton")
@@ -219,10 +245,9 @@
             nextQuote();
         });
 
-        nextQuote();
     }
 
-    async function nextQuote() {
+    async function nextQuote(refetch_results=false) {
     	const mtState = getMtState();
     	if(mtState !== "typing" && mtState !== "result") return;
         let quotes = getStoredQuotes();
@@ -231,7 +256,7 @@
             storeQuotesInLocalStorage(quotes);
         }
         
-        let nextQuoteId = localStorage.getItem(LOCAL_STORAGE_KEY_PREFIX+"last_quote_id");
+        let nextQuoteId = refetch_results ? null : localStorage.getItem(LOCAL_STORAGE_KEY_PREFIX+"last_quote_id");
         if(nextQuoteId === null || nextQuoteId === undefined || isNaN(nextQuoteId)) {
         	const completedQuotes = await fetchCompletedQuotes(authToken);
         	if(completedQuotes === null) {
@@ -289,16 +314,7 @@
         var newButton = `<button class="textButton" id="quote-id-notice">Quote ID: ${quoteId}</button>`;
         document.getElementById("testModesNotice").innerHTML += newButton;
         document.getElementById("quote-id-notice").addEventListener("click", function() {
-        	var quoteId = localStorage.getItem(LOCAL_STORAGE_KEY_PREFIX+"last_quote_id");
-        	if(quoteId === null || quoteId === undefined) return;
-        	var activeQuote = localStorage.getItem(LOCAL_STORAGE_KEY_PREFIX+"active_quote");
-        	if(activeQuote === null) {
-        		startNextQuote(parseInt(quoteId));
-        		return;
-        	}
-        	activeQuote = parseInt(activeQuote);
-        	if(activeQuote == quoteId) return;
-        	startNextQuote(parseInt(quoteId));
+        	nextQuote(true);
         });
     }, QUOTE_ID_NOTICE_INTERVAL);
 })();
