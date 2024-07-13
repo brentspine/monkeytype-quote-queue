@@ -6,7 +6,7 @@
 
 
 // @namespace    http://tampermonkey.net/
-// @version      1.1.4
+// @version      1.2.1
 // @match        https://monkeytype.com/*
 // @grant        none
 // 
@@ -15,7 +15,9 @@
 (async function() {
     'use strict';
 
-    const START_TIMESTAMP = 1720647438000;
+    // You can now change this value in the config, by pressing the current Quote display at the top of the typing test
+    // It is only for the first init
+    let START_TIMESTAMP = 0;
     const QUOTE_ID_NOTICE_INTERVAL = 200;
 
     // Quote Results do not store their source language. This means the program can't make out a difference between, for example, the german quote 42 and the english quote 42.
@@ -232,6 +234,10 @@
     		return;
     	}
     	localStorage.setItem(LOCAL_STORAGE_KEY_PREFIX+"last_quote_id", null);
+    	if(localStorage.getItem(LOCAL_STORAGE_KEY_PREFIX+"start_timstamp") == null) 
+    		localStorage.setItem(LOCAL_STORAGE_KEY_PREFIX+"start_timstamp", START_TIMESTAMP);
+        else
+            START_TIMESTAMP = parseInt(localStorage.getItem(LOCAL_STORAGE_KEY_PREFIX+"start_timstamp"));
     	// await waitForAnyState(STATES.filter(s => s !== "loading" && s !== "login"));
     	authToken = await getAuthToken();
         let newButton = document.getElementById("saveScreenshotButton").outerHTML;
@@ -245,6 +251,76 @@
             nextQuote();
         });
 
+    }
+    
+    async function createBqpModal(results=null) {
+        let timePlayed = 0.0;
+        let wordsTyped = 0;
+        let charsTyped = 0;
+        let completedQuotes = 0;
+        let timePlayedString = "?:??";
+        const allQuotes = JSON.parse(localStorage.getItem(`${LOCAL_STORAGE_KEY_PREFIX}quotes_${QUOTES_LANGUAGE}`));
+        const totalQuotes = allQuotes.length;
+        const startTimestamp = localStorage.getItem(LOCAL_STORAGE_KEY_PREFIX+"start_timstamp");
+        const resultCache = results !== null ? results : JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY_PREFIX+"result_cache"));
+        if(resultCache !== null) {
+            completedQuotes = resultCache.length;
+            for(const result of resultCache) {
+                timePlayed += result.testDuration;
+                allQuotes.filter(quote => quote.id.toString() === result.mode2).forEach(quote => {
+                    wordsTyped += quote.text.split(" ").length + 1;
+                    charsTyped += quote.length;
+                    console.log(quote);
+                });
+                console.log(timePlayed, wordsTyped, charsTyped);
+            }
+            const days = Math.floor(timePlayed / (60 * 60 * 24));
+            const hours = Math.floor(timePlayed / (60 * 60)) % 24;
+            const minutes = Math.floor(timePlayed / 60) % 60;
+            const seconds = Math.floor(timePlayed) % 60;
+            timePlayedString = `${days > 0 ? days + "d " : ""}${hours > 0 ? hours + "h " : ""}${minutes}m ${seconds}s`;
+        }
+        const completionPercentage = ((completedQuotes / totalQuotes) * 100).toFixed(2);
+    	let modal = `<dialog id="bqp-modal" class="modalWrapper" style="opacity: 1;"><div class="modal" style="opacity: 1; background: var(--bg-color);border-radius: var(--roundness);padding: 2rem;display: grid;gap: 1rem;width: 80vw;max-width: 1000px;height: 80vh;grid-template-rows: auto auto auto 1fr;">
+    		<div style="display: flex; flex-direction: row; justify-content: space-between;align-items:center;"><h2>Quote Progress</h2><h3 id="bqp-close" style="cursor:pointer">&times;</h3></div>
+            <label for="start-timestamp">Start Timestamp (ms):</label>
+            <input type="number" id="start-timestamp" value=${startTimestamp}>
+            <div>
+                <div style="display: flex; flex-direction: row; justify-content: space-between;align-items:center;"><p id="completed-quotes">Completed Quotes: ${completedQuotes}/${totalQuotes} (${completionPercentage}%)</p><a href="https://currentmillis.com" target="_blank">Current Timestamp</a></div>
+                <p id="words-typed">Time typed: ${timePlayedString}</p>
+                <p id="words-typed">Words typed: ${wordsTyped.toLocaleString()}</p>
+                <p id="words-typed">Chars typed: ${charsTyped.toLocaleString()}</p>
+            </div>
+            <button id="next-quote" style="max-width: 20vw">Reload Next Quote</button>
+            <button id="update-stats" style="max-width: 20vw">Update Stats</button>
+            <button id="save-settings">Save</button>
+    	</div></dialog>`;
+    	document.getElementById("popups").innerHTML += modal;
+        document.getElementById("bqp-close").addEventListener("click", function() {
+        	document.getElementById("bqp-modal").outerHTML = "";
+        });
+        document.getElementById("next-quote").addEventListener("click", function() {
+            document.getElementById("bqp-modal").outerHTML = "";
+            nextQuote(true);
+        });
+        document.getElementById("update-stats").addEventListener("click", async function() {
+            document.getElementById("update-stats").innerHTML = "Updating...";
+            localStorage.setItem(LOCAL_STORAGE_KEY_PREFIX+"result_cache", null);
+            const results = await fetchCompletedQuotes(authToken);
+            document.getElementById("bqp-modal").outerHTML = "";
+            createBqpModal(results);
+        });
+        document.getElementById("save-settings").addEventListener("click", function() {
+            const newStartTimestamp = document.getElementById("start-timestamp").value;
+            if(isNaN(newStartTimestamp)) return;
+            if(newStartTimestamp < 0) newStartTimestamp = 0;
+            if(newStartTimestamp > Date.now()) newStartTimestamp = Date.now();
+            const oldStartTimestamp = localStorage.getItem(LOCAL_STORAGE_KEY_PREFIX+"start_timstamp");
+            if(oldStartTimestamp == newStartTimestamp) return;
+            localStorage.setItem(LOCAL_STORAGE_KEY_PREFIX+"start_timstamp", newStartTimestamp);
+            document.getElementById("save-settings").innerHTML = "Saved! Reloading page to apply all changes...";
+            window.location.reload();
+        });
     }
 
     async function nextQuote(refetch_results=false) {
@@ -314,7 +390,8 @@
         var newButton = `<button class="textButton" id="quote-id-notice">Quote ID: ${quoteId}</button>`;
         document.getElementById("testModesNotice").innerHTML += newButton;
         document.getElementById("quote-id-notice").addEventListener("click", function() {
-        	nextQuote(true);
+        	//nextQuote(true);
+            createBqpModal();
         });
     }, QUOTE_ID_NOTICE_INTERVAL);
 })();
