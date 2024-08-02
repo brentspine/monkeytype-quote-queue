@@ -51,13 +51,7 @@ You can set a start timestamp for quote completion check. That means that quotes
 
 ### Language options <span id="language-options"></span>
 
-You can change the target language at the beginning of the script. Just change the value of the QUOTES_LANGUAGE variable to a lower case language key.
- 1. A valid language on monkeytype
- 2. Written in lowercase
- 3. And you have selected the correct language in MonkeyType
-
-⚠ Quote Results do not store their source language. This means the program can't make out a difference between, for example, the german quote 42 and the english quote 42. You can try to change the <a href="#usage-filtering">start timestamp</a> to fix this<br>
-⚠ Before changing the language in the config, please make sure you have the correct language selected in MonkeyType
+The script can now differenciate between quote languages. Just select a language using the globe icon at the top of the typing test and the tracking will automatically update.
 
 ## Install <span id="install"></span>
 
