@@ -9,6 +9,8 @@ User script to add the "next quote" option. This allows you to type out all quot
 **&nbsp;&nbsp;&nbsp;&nbsp;[2.2 Filtering](#usage-filtering)**<br>
 **&nbsp;&nbsp;&nbsp;&nbsp;[2.3 Language Options](#language-options)**<br>
 **[3. Install](#install)**<br>
+**&nbsp;&nbsp;&nbsp;&nbsp;[3.1 Automatic Updates](#install-updates)**<br>
+**&nbsp;&nbsp;&nbsp;&nbsp;[3.2 Static](#install-static)**<br>
 **[4. Feature Requests](#feature-requests)**<br>
 **[5. Troubleshoot](#troubleshoot)**<br>
 
@@ -59,8 +61,6 @@ You can change the target language at the beginning of the script. Just change t
 
 ## Install <span id="install"></span>
 
-### Using "User Javascript and CSS" extension
-
 Download [this extension](https://chromewebstore.google.com/detail/user-javascript-and-css/nbhcbdghjpllgmfilhnhkllmkecfmpld?pli=1) from the Chrome Extension Store.
 
 ![image](https://github.com/brentspine/monkeytype-quote-queue/assets/55391576/0cb8359e-6061-4574-81ab-2cd91add9ac2)
@@ -70,9 +70,29 @@ You can pin the extension for better use if you want. Click the icon to open up 
 
 ![ezgif com-animated-gif-maker](https://github.com/brentspine/monkeytype-quote-queue/assets/55391576/98ecee87-cf95-4a96-93fd-50db753cb968)
 
+<b>You can either use automatic updating or just copy the latest script, both options are described below</b> <a href="#install-updates">Automatic Updates</a> or <a href="#install-static">Static</a>
+
+### Automatic Updates <span id="install-updates"></span>
+
+1. Go to this URL: https://brentspine.github.io/monkeytype-quote-queue/
+2. Select your version, we will use "latest" for automatic updates
+3. Click "Generate"
+4. Copy the contents by pressing "Copy"
+5. Then paste them into the window you just opened. Press save or use CTRL+S.
+
+<img src="https://github.com/user-attachments/assets/db4fab80-2160-4e83-9077-9377d9a9a123" height=250>
+
+Close the extension window and reload MonkeyType. The changes should successfully be applied.
+
+<br><i>You might need to reload the page twice due to a init bug. This will only occur once</i>
+
+<i> You can turn off the extension at any time by using the respective dialog as <a href="https://github.com/brentspine/monkeytype-quote-queue/assets/55391576/98ecee87-cf95-4a96-93fd-50db753cb968" target="_blank">seen here</a></i>
+
+### Static <span id="install-static"></span>
+
 Go to the [latest release](https://github.com/brentspine/monkeytype-quote-queue/releases/tag/release) and copy the contents of the appended JS file. Then paste them into the window you just opened. Press save or use CTRL+S.
 
-<img src="https://github.com/brentspine/monkeytype-quote-queue/assets/55391576/489e0063-dd6b-425b-881e-1cea605a986d" height=400>
+<img src="https://github.com/brentspine/monkeytype-quote-queue/assets/55391576/489e0063-dd6b-425b-881e-1cea605a986d" height=250>
 
 Close the extension window and reload MonkeyType. The changes should successfully be applied.
 
