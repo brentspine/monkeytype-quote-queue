@@ -6,7 +6,7 @@
 
 
 // @namespace    http://tampermonkey.net/
-// @version      1.2.4
+// @version      1.3.1
 // @match        https://monkeytype.com/*
 // @grant        none
 // 
@@ -19,12 +19,13 @@
     // It is only for the first init
     let START_TIMESTAMP = 0;
     const QUOTE_ID_NOTICE_INTERVAL = 200;
+    const LANGUAGE_CHANGE_CHECK_INTERVAL = 200;
 
     // Quote Results do not store their source language. This means the program can't make out a difference between, for example, the german quote 42 and the english quote 42.
     // Before changing the language in the config, please make sure you have the correct language selected in MonkeyType
     const QUOTES_LANGUAGE = "english";
     
-    const QUOTES_URL = `https://monkeytype.com/quotes/${QUOTES_LANGUAGE}.json`;
+    const QUOTES_URL = "https://monkeytype.com/quotes/{{lang}}.json";
     const COMPLETED_QUOTES_URL = 'https://api.monkeytype.com/results';
     const LOCAL_STORAGE_KEY_PREFIX = 'bqp_';
     
@@ -41,7 +42,7 @@
     }
     
     async function fetchQuotes() {
-        const response = await fetch(QUOTES_URL);
+        const response = await fetch(QUOTES_URL.replace("{{lang}}", getSelectedLanguage()));
         if(response.status > 299) {
         	alert(`Encountered a ${response.status} error while fetching quotes. Please check your configuration.`)
         	return null;
@@ -51,6 +52,7 @@
     }
 
     async function fetchCompletedQuotes(authToken, attempt=1) {
+    	const language = getSelectedLanguage();
         const response = await fetch(COMPLETED_QUOTES_URL, {
             headers: {
                 'Authorization': `Bearer ${authToken}`
@@ -69,17 +71,17 @@
         	return null;
         }
         const data = await response.json();
-        const r = data.data.filter(result => result.mode === 'quote').filter(result => result.timestamp > START_TIMESTAMP);
-        localStorage.setItem(LOCAL_STORAGE_KEY_PREFIX+"result_cache", JSON.stringify(r));
+        const r = data.data.filter(result => result.mode === 'quote').filter(result => result.timestamp > START_TIMESTAMP).filter(result => result.language === language || ((result.language === null || result.language === undefined)) && language == "english");
+        localStorage.setItem(LOCAL_STORAGE_KEY_PREFIX+"result_cache_"+language, JSON.stringify(r));
         return r;
     }
 
     function storeQuotesInLocalStorage(quotes) {
-        localStorage.setItem(`${LOCAL_STORAGE_KEY_PREFIX}quotes_${QUOTES_LANGUAGE}`, JSON.stringify(quotes));
+        localStorage.setItem(`${LOCAL_STORAGE_KEY_PREFIX}quotes_${getSelectedLanguage()}`, JSON.stringify(quotes));
     }
 
     function getStoredQuotes() {
-        const quotes = localStorage.getItem(`${LOCAL_STORAGE_KEY_PREFIX}quotes_${QUOTES_LANGUAGE}`);
+        const quotes = localStorage.getItem(`${LOCAL_STORAGE_KEY_PREFIX}quotes_${getSelectedLanguage()}`);
         return quotes ? JSON.parse(quotes) : null;
     }
 
@@ -108,6 +110,16 @@
     function doClick(element) {
         element.dispatchEvent(getClickEvent());
     }
+    
+    function getSelectedLanguage() {
+    	const languagesButton = document.querySelector(`#testModesNotice button[commands="languages"]`);
+        let selectedLang = "unknown";
+        if(languagesButton !== null && languagesButton !== undefined) {
+        	selectedLang = languagesButton.innerHTML.replace(`<i class="fas fa-globe-americas"></i>`, "");
+        }
+        localStorage.setItem("selected_lang", selectedLang)
+        return selectedLang;
+    }
 
     function startNextQuote(quoteId, attempt=1) {
         let quoteElement = document.querySelector(`.searchResult[data-quote-id="${quoteId}"]`);
@@ -116,12 +128,11 @@
             console.log(`Quote not loaded, attempt ${attempt}`);
             if(attempt >= 3) {
                 console.log("Next quote: Failed after 3 attempts");
-                const languagesButton = document.querySelector(`#testModesNotice button[commands="languages"]`);
-                let selectedLang = "unknown";
-                if(languagesButton !== null && languagesButton !== undefined) {
-                	selectedLang = languagesButton.innerHTML.replace(`<i class="fas fa-globe-americas"></i>`, "");
-                }
-                alert(`Couldn't find quote with id ${quoteId} while activating. Do you have the correct language selected? Config Language: ${QUOTES_LANGUAGE}, Selected Language: ${selectedLang}`);
+                var selectedLang = getSelectedLanguage();
+                console.log(`Couldn't find quote with id ${quoteId} while activating. Config Language: ${getSelectedLanguage()}, Selected Language: ${selectedLang}. Try again and the program will try quote ${quoteId+1}`)
+                //alert(`Couldn't find quote with id ${quoteId} while activating. Config Language: ${getSelectedLanguage()}, Selected Language: ${selectedLang}. Try again and the program will try quote ${quoteId+1}`);
+                localStorage.setItem(LOCAL_STORAGE_KEY_PREFIX+"last_quote_id",quoteId+1);
+                startNextQuote(quoteId+1);
                 return;
             }
             const quote_button = document.querySelector(`#testConfig button[mode="quote"]`);
@@ -259,10 +270,10 @@
         let charsTyped = 0;
         let completedQuotes = 0;
         let timePlayedString = "?:??";
-        const allQuotes = JSON.parse(localStorage.getItem(`${LOCAL_STORAGE_KEY_PREFIX}quotes_${QUOTES_LANGUAGE}`));
+        const allQuotes = JSON.parse(localStorage.getItem(`${LOCAL_STORAGE_KEY_PREFIX}quotes_${getSelectedLanguage()}`));
         const totalQuotes = allQuotes.length;
         const startTimestamp = localStorage.getItem(LOCAL_STORAGE_KEY_PREFIX+"start_timstamp");
-        const resultCache = results !== null ? results : JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY_PREFIX+"result_cache"));
+        const resultCache = results !== null ? results : JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY_PREFIX+"result_cache_"+getSelectedLanguage()));
         if(resultCache !== null) {
             completedQuotes = resultCache.length;
             for(const result of resultCache) {
@@ -289,7 +300,7 @@
                 <p id="words-typed">Words typed: ${wordsTyped.toLocaleString()}</p>
                 <p id="words-typed">Chars typed: ${charsTyped.toLocaleString()}</p>
             </div>
-            <div><a href="https://github.com/brentspine/monkeytype-quote-queue/">GitHub</a></div>
+            <div><a href="https://github.com/brentspine/monkeytype-quote-queue/" target="_blank">GitHub</a></div>
             <div>Version %version%</div>
             <button id="next-quote" style="max-width: 20vw">Reload Next Quote</button>
             <button id="update-stats" style="max-width: 20vw">Update Stats</button>
@@ -313,7 +324,7 @@
         });
         document.getElementById("update-stats").addEventListener("click", async function() {
             document.getElementById("update-stats").innerHTML = "Updating...";
-            localStorage.setItem(LOCAL_STORAGE_KEY_PREFIX+"result_cache", null);
+            localStorage.setItem(LOCAL_STORAGE_KEY_PREFIX+"result_cache_"+getSelectedLanguage(), null);
             const results = await fetchCompletedQuotes(authToken);
             document.getElementById("bqp-modal").outerHTML = "";
             createBqpModal(results);
@@ -354,7 +365,7 @@
 			nextQuoteId = parseInt(getNextQuoteId(quotes, completedQuoteIds));
         } else {
         	const minId = parseInt(nextQuoteId) + 1;
-        	const resultCache = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY_PREFIX+"result_cache"));
+        	const resultCache = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY_PREFIX+"result_cache_"+getSelectedLanguage()));
         	const completedQuoteIds = getCompletedQuoteIds(resultCache);
         	nextQuoteId = getNextQuoteId(quotes,completedQuoteIds,minId);
         }
@@ -405,4 +416,9 @@
             createBqpModal();
         });
     }, QUOTE_ID_NOTICE_INTERVAL);
+    setInterval(function() {
+    	const oldLang = localStorage.getItem("selected_lang");
+    	const newLang = getSelectedLanguage();
+    	if(oldLang !== newLang) nextQuote();
+    }, LANGUAGE_CHANGE_CHECK_INTERVAL);
 })();
