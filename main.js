@@ -6,7 +6,7 @@
 
 
 // @namespace    http://tampermonkey.net/
-// @version      1.2.2
+// @version      1.2.3
 // @match        https://monkeytype.com/*
 // @grant        none
 // 
@@ -322,7 +322,10 @@
             if(newStartTimestamp < 0) newStartTimestamp = 0;
             if(newStartTimestamp > Date.now()) newStartTimestamp = Date.now();
             const oldStartTimestamp = localStorage.getItem(LOCAL_STORAGE_KEY_PREFIX+"start_timstamp");
-            if(oldStartTimestamp == newStartTimestamp) return;
+            if(oldStartTimestamp == newStartTimestamp) {
+            	document.getElementById("bqp-modal").outerHTML = "";
+            	return;
+            }
             localStorage.setItem(LOCAL_STORAGE_KEY_PREFIX+"start_timstamp", newStartTimestamp);
             document.getElementById("save-settings").innerHTML = "Saved! Reloading page to apply all changes...";
             window.location.reload();
