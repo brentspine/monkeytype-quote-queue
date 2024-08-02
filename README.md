@@ -19,9 +19,9 @@ User script to add the "next quote" option. This allows you to type out all quot
 
 Note: You can turn off the extension at any time by using the respective dialog as <a href="https://github.com/brentspine/monkeytype-quote-queue/assets/55391576/98ecee87-cf95-4a96-93fd-50db753cb968" target="_blank">seen here</a>
 
-After enabling the extension head to "quotes" and reload the page to be safe. The extension will fetch all your results and all quotes and search for the first non-completed one. It will automatically start the test for that quote. It goes ordered by ID. I can maybe add sorting by length or other things if needed. Just [open an issue](https://github.com/brentspine/monkeytype-quote-queue/issues).
+After enabling the extension head to the "quotes" typing test. The extension will fetch all your results and all quotes and search for the first non-completed one. It will automatically start the test for that quote. It goes ordered by ID. I can maybe add sorting by length or other things if needed. Just [open an issue](https://github.com/brentspine/monkeytype-quote-queue/issues).
 
-After completing a test, you can use the "Next Quote" button to, as you might have guesses, go to the next queued quote.
+After completing a test, you can use the "Next Quote" button to, as you might have guessed, go to the next queued quote.
 
 ![gflkhjndflkgjnhldfkgjnhldkfjgnhldkfgjhn](https://github.com/brentspine/monkeytype-quote-queue/assets/55391576/cf8d9f98-95f9-463e-bc93-9fcbd9584c16)
 <i>Read about settings/config and stats below</i>
@@ -90,7 +90,7 @@ Close the extension window and reload MonkeyType. The changes should successfull
 
 ### Static <span id="install-static"></span>
 
-Go to the [latest release](https://github.com/brentspine/monkeytype-quote-queue/releases/tag/release) and copy the contents of the appended JS file. Then paste them into the window you just opened. Press save or use CTRL+S.
+Go to the [latest release](https://github.com/brentspine/monkeytype-quote-queue/releases/) and copy the contents of the appended JS file. Then paste them into the window you just opened. Press save or use CTRL+S.
 
 <img src="https://github.com/brentspine/monkeytype-quote-queue/assets/55391576/489e0063-dd6b-425b-881e-1cea605a986d" height=250>
 
