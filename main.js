@@ -6,7 +6,7 @@
 
 
 // @namespace    http://tampermonkey.net/
-// @version      1.3.1
+// @version      1.3.2
 // @match        https://monkeytype.com/*
 // @grant        none
 // 
@@ -419,6 +419,6 @@
     setInterval(function() {
     	const oldLang = localStorage.getItem("selected_lang");
     	const newLang = getSelectedLanguage();
-    	if(oldLang !== newLang) nextQuote();
+    	if(oldLang !== newLang) nextQuote(true);
     }, LANGUAGE_CHANGE_CHECK_INTERVAL);
 })();
