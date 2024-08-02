@@ -6,7 +6,7 @@
 
 
 // @namespace    http://tampermonkey.net/
-// @version      1.2.3
+// @version      1.2.4
 // @match        https://monkeytype.com/*
 // @grant        none
 // 
@@ -289,6 +289,8 @@
                 <p id="words-typed">Words typed: ${wordsTyped.toLocaleString()}</p>
                 <p id="words-typed">Chars typed: ${charsTyped.toLocaleString()}</p>
             </div>
+            <div><a href="https://github.com/brentspine/monkeytype-quote-queue/">GitHub</a></div>
+            <div>Version %version%</div>
             <button id="next-quote" style="max-width: 20vw">Reload Next Quote</button>
             <button id="update-stats" style="max-width: 20vw">Update Stats</button>
             <button id="save-settings">Save</button>
