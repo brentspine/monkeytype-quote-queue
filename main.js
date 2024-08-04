@@ -6,7 +6,7 @@
 
 
 // @namespace    http://tampermonkey.net/
-// @version      1.3.2
+// @version      1.4.1
 // @match        https://monkeytype.com/*
 // @grant        none
 // 
@@ -30,6 +30,8 @@
     const LOCAL_STORAGE_KEY_PREFIX = 'bqp_';
     
     const STATES = ["loading", "login", "account", "typing", "result"];
+    const AVAILABLE_LANGS = ["afrikaans", "albanian", "arabic", "bangla", "belarusian", "belarusian_lacinka", "bulgarian", "chinese_simplified", "code_arduino", "code_assembly", "code_c++", "code_c", "code_csharp", "code_css", "code_cuda", "code_go", "code_java", "code_javascript", "code_julia", "code_kotlin", "code_lua", "code_nim", "code_php", "code_python", "code_r", "code_ruby", "code_rust", "code_systemverilog", "czech", "danish", "dutch", "english", "esperanto", "estonian", "filipino", "finnish", "french", "georgian", "german", "hebrew", "hindi", "icelandic", "indonesian", "irish", "italian", "kannada", "korean", "latin", "lithuanian", "malagasy", "malayalam", "marathi", "mongolian", "nepali", "norwegian_bokmal", "norwegian_nynorsk", "persian", "polish", "portuguese", "romanian", "russian", "sanskrit", "serbian", "slovak", "spanish", "swedish", "tamil", "thai", "toki_pona", "turkish", "ukrainian", "vietnamese"];
+
 
     function getStyleOfObjectFloat(object, styleType) {
         if (object && object.style) {
@@ -41,13 +43,29 @@
         return 0;
     }
     
-    async function fetchQuotes() {
-        const response = await fetch(QUOTES_URL.replace("{{lang}}", getSelectedLanguage()));
+    function arraysEqual(arr1, arr2) {
+	    if (arr1.length !== arr2.length) return false;
+	    for (let i = 0; i < arr1.length; i++) {
+	        if (arr1[i] !== arr2[i]) return false;
+	    }
+	    return true;
+	}
+
+    
+    async function fetchQuotes(lang=null) {
+    	lang = lang != null ? lang : getSelectedLanguage();
+        const response = await fetch(QUOTES_URL.replace("{{lang}}", lang.replaceAll(" ", "_")));
         if(response.status > 299) {
-        	alert(`Encountered a ${response.status} error while fetching quotes. Please check your configuration.`)
+        	alert(`Encountered a ${response.status} error while fetching quotes. Please check your configuration.`);
         	return null;
         }
         const data = await response.json();
+        data.quotes.forEach(function(q) {
+        	q.words = q.text.split(" ").length + 1;
+        	delete q.text;
+        	delete q.source;
+        })
+        localStorage.setItem(LOCAL_STORAGE_KEY_PREFIX+"quotes_"+lang, JSON.stringify(data.quotes));
         return data.quotes;
     }
 
@@ -71,7 +89,29 @@
         	return null;
         }
         const data = await response.json();
+        AVAILABLE_LANGS.forEach(function(lang) {
+        	let r = data.data.filter(result => result.mode === 'quote').filter(result => result.timestamp > START_TIMESTAMP).filter(result => result.language === lang || ((result.language === null || result.language === undefined)) && lang == "english");
+        	r.forEach(function(x) {
+	        	delete x.charStats;
+	        	delete x.chartData;
+	        	delete x.keyDurationStats;
+	        	delete x.keySpacingStats;
+	        	delete x.uid;
+	        	delete x.name;
+	        	delete x._id;
+	        });
+        	localStorage.setItem(LOCAL_STORAGE_KEY_PREFIX+"result_cache_"+lang, JSON.stringify(r));
+        });
         const r = data.data.filter(result => result.mode === 'quote').filter(result => result.timestamp > START_TIMESTAMP).filter(result => result.language === language || ((result.language === null || result.language === undefined)) && language == "english");
+        r.forEach(function(x) {
+        	delete x.charStats;
+        	delete x.chartData;
+        	delete x.keyDurationStats;
+        	delete x.keySpacingStats;
+        	delete x.uid;
+        	delete x.name;
+        	delete x._id;
+        });
         localStorage.setItem(LOCAL_STORAGE_KEY_PREFIX+"result_cache_"+language, JSON.stringify(r));
         return r;
     }
@@ -117,6 +157,7 @@
         if(languagesButton !== null && languagesButton !== undefined) {
         	selectedLang = languagesButton.innerHTML.replace(`<i class="fas fa-globe-americas"></i>`, "");
         }
+        selectedLang = selectedLang.replaceAll(" ", "_");
         localStorage.setItem("selected_lang", selectedLang)
         return selectedLang;
     }
@@ -236,6 +277,7 @@
 
     let authToken;
     async function main() {
+    	preloadQuotes();
     	if(getMtState() == "login") {
     		await waitForAnyState(STATES.filter(s => s !== "loading" && s !== "login"));
     		setTimeout(function() {
@@ -261,25 +303,120 @@
         document.getElementById("nextQuoteButton").addEventListener("click", function() {
             nextQuote();
         });
+    }
+    
+    async function preloadQuotes() {
+    	getQuotesLangs(AVAILABLE_LANGS);
+    }
+    
+    async function getResultCacheLangs(langs) {
+    	let resultCache = [];
+    	console.log("LANGS: "+langs);
+	    for (const lang of langs) {
+	        let c = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY_PREFIX + "result_cache_" + lang));
+	        if (!c) {
+	            c = await fetchCompletedQuotes(authToken, 1);
+	        }
+	        resultCache = resultCache.concat(c);
+	    }
+	    return resultCache;
+	}
+	
+	async function getQuotesLangs(langs) {
+		let allQuotes = [];
+		for (const lang of langs) {
+			let q = JSON.parse(localStorage.getItem(`${LOCAL_STORAGE_KEY_PREFIX}quotes_${lang}`));
+	    	if(!q) {
+	    		await fetchQuotes(lang);
+	    		q = JSON.parse(localStorage.getItem(`${LOCAL_STORAGE_KEY_PREFIX}quotes_${lang}`));
+	    	}
+	    	allQuotes = allQuotes.concat(q);
+		}
+		return allQuotes;
+	}
 
+    function populateLanguageDropdown() {
+    	const languageSelect = document.getElementById("bqpLanguageSelect");
+	    const selectedLanguagesDiv = document.getElementById("bqpSelectedLanguages");
+	    languageSelect.innerHTML = '<option value="" disabled selected>Select a language</option>';
+        
+        // Get currently selected languages
+        const selectedLanguages = Array.from(selectedLanguagesDiv.children).map(tag => tag.id);
+
+        // Add available languages to the dropdown
+        AVAILABLE_LANGS.forEach(lang => {
+            if (!selectedLanguages.includes(lang)) {
+                const option = document.createElement("option");
+                option.value = lang;
+                option.textContent = lang;
+                languageSelect.appendChild(option);
+            }
+        });
+    }
+
+    function addLanguageTagConfig(language) {
+        if (document.getElementById(language)) return;
+        
+		const selectedLanguagesDiv = document.getElementById("bqpSelectedLanguages");
+        const tagDiv = document.createElement("div");
+        tagDiv.className = "language-tag";
+        tagDiv.id = language.replaceAll(" ", "_");
+
+        const span = document.createElement("span");
+        span.textContent = language;
+        tagDiv.appendChild(span);
+
+        const button = document.createElement("button");
+        button.innerHTML = "&times;";
+        button.addEventListener("click", () => {
+            tagDiv.remove();
+            if(document.getElementById("bqpSelectedLanguages").children.length <= 0) {
+            	document.getElementById("bqpSelectedLanguages").innerHTML = "<i>Will use default language for tracking</i>";
+            }
+            
+            populateLanguageDropdown();
+            saveBqpLanguages();
+            createBqpModal();
+        });
+        // Remove all <i></i> tags
+        document.querySelectorAll("#bqpSelectedLanguages i").forEach(i => i.remove());
+
+        tagDiv.appendChild(button);
+
+        selectedLanguagesDiv.appendChild(tagDiv);
+    }
+
+    function saveBqpLanguages() {
+        const selectedLanguages = Array.from(document.getElementById("bqpSelectedLanguages").children).filter(tag => tag.id).map(tag => tag.id);
+        localStorage.setItem(LOCAL_STORAGE_KEY_PREFIX + "selected_languages", JSON.stringify(selectedLanguages));
+    }
+
+    function loadBqpLanguages() {
+        const selectedLanguages = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY_PREFIX + "selected_languages"));
+        return selectedLanguages ? (selectedLanguages.length > 0 ? selectedLanguages : [getSelectedLanguage().replaceAll(" ", "_")]) : [getSelectedLanguage().replaceAll(" ", "_")];
     }
     
     async function createBqpModal(results=null) {
+    	try {
+    		document.getElementById("bqp-modal").outerHTML = "";
+    	} catch(e) {}
         let timePlayed = 0.0;
         let wordsTyped = 0;
         let charsTyped = 0;
         let completedQuotes = 0;
         let timePlayedString = "?:??";
-        const allQuotes = JSON.parse(localStorage.getItem(`${LOCAL_STORAGE_KEY_PREFIX}quotes_${getSelectedLanguage()}`));
+        const bqplangs = loadBqpLanguages();
+        console.log(bqplangs);
+        const allQuotes = await getQuotesLangs(bqplangs);
         const totalQuotes = allQuotes.length;
         const startTimestamp = localStorage.getItem(LOCAL_STORAGE_KEY_PREFIX+"start_timstamp");
-        const resultCache = results !== null ? results : JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY_PREFIX+"result_cache_"+getSelectedLanguage()));
+        const resultCache = results !== null ? results : await getResultCacheLangs(bqplangs);
         if(resultCache !== null) {
             completedQuotes = resultCache.length;
             for(const result of resultCache) {
                 timePlayed += result.testDuration;
                 allQuotes.filter(quote => quote.id.toString() === result.mode2).forEach(quote => {
-                    wordsTyped += quote.text.split(" ").length + 1;
+                    wordsTyped += quote.words;
                     charsTyped += quote.length;
                 });
             }
@@ -290,11 +427,74 @@
             timePlayedString = `${days > 0 ? days + "d " : ""}${hours > 0 ? hours + "h " : ""}${minutes}m ${seconds}s`;
         }
         const completionPercentage = ((completedQuotes / totalQuotes) * 100).toFixed(2);
-    	let modal = `<dialog id="bqp-modal" class="modalWrapper" style="opacity: 1;"><div class="modal" style="opacity: 1; background: var(--bg-color);border-radius: var(--roundness);padding: 2rem;display: grid;gap: 1rem;width: 80vw;max-width: 1000px;height: 80vh;grid-template-rows: auto auto auto 1fr;">
-    		<div style="display: flex; flex-direction: row; justify-content: space-between;align-items:center;"><h2>Quote Progress</h2><h3 id="bqp-close" style="cursor:pointer">&times;</h3></div>
+    	let modal = `
+    	<style>
+    		#bqp-modal select {
+			    width: 100%;
+			    margin-bottom: 10px;
+			    padding: 8px;
+			    font-size: 14px;
+			    border-radius: var(--roundness);
+    			background: var(--sub-alt-color);
+    			color: var(--text-color);
+			}
+			
+			#bqpSelectedLanguages {
+			    display: flex;
+			    flex-wrap: wrap;
+			}
+			#bqpRemoveAllButton {
+				margin-left: 12px;
+				min-width: 150px;
+			}
+			#bqpAddAllButton {
+				margin-left: 12px;
+				min-width: 150px;
+			}
+			
+			.language-tag {
+			    background: var(--sub-alt-color);
+			    border-radius: 4px;
+			    padding: 5px 10px;
+			    margin: 5px;
+			    display: flex;
+			    align-items: center;
+			}
+			
+			.language-tag span {
+			    margin-right: 10px;
+			    font-size: 14px;
+			}
+			
+			.language-tag button {
+		        background: none;
+			    border: none;
+			    cursor: pointer;
+			    font-size: 12px;
+			    padding: 0;
+			}
+			.language-tag button:hover {
+				color: var(--text-color);
+			}
+
+    	</style>
+    	<dialog id="bqp-modal" class="modalWrapper" style="opacity: 1;"><div class="modal" style="opacity: 1; background: var(--bg-color);border-radius: var(--roundness);padding: 2rem;display: grid;gap: 1rem;width: 80vw;max-width: 1000px;height: 80vh;grid-template-rows: auto auto auto 1fr;">
+    		<div>
+    			<div style="display: flex; flex-direction: row; justify-content: space-between;align-items:center;"><h2>Quote Progress</h2><h3 id="bqp-close" style="cursor:pointer">&times;</h3></div>
+	    		<div style="display: flex; justify-content: center;">
+	    			<select id="bqpLanguageSelect">
+		            <option value="" disabled selected>Select a language</option>
+			            <!-- Options will be added dynamically -->
+			        </select>
+			        <button id="bqpRemoveAllButton">Remove All</button>
+			        <button id="bqpAddAllButton">Add All</button>
+	    		</div>
+	    		<div id="bqpSelectedLanguages"></div>
+    		</div>
             <div style="display: flex; flex-direction: row; justify-content: space-between;align-items:center;"><label for="start-timestamp">Start Timestamp (ms):</label><a href="https://currentmillis.com" target="_blank">Current Timestamp</a></div>
             <input type="number" id="start-timestamp" value=${startTimestamp}>
             <div>
+            	<b id="fully-completed" style="display: ${completedQuotes >= totalQuotes ? "block" : "none"};">You've completed all quotes for this filter!</b>
                 <p id="completed-quotes">Completed Quotes: ${completedQuotes}/${totalQuotes} (${completionPercentage}%)</p>
                 <p id="words-typed">Time typed: ${timePlayedString}</p>
                 <p id="words-typed">Words typed: ${wordsTyped.toLocaleString()}</p>
@@ -307,6 +507,37 @@
             <button id="save-settings">Save</button>
     	</div></dialog>`;
     	document.getElementById("popups").innerHTML += modal;
+        const languageSelect = document.getElementById("bqpLanguageSelect");
+	    const selectedLanguagesDiv = document.getElementById("bqpSelectedLanguages");
+	    const addAllButton = document.getElementById("bqpAddAllButton");
+	    const removeAllButton = document.getElementById("bqpRemoveAllButton");
+        const selectedLanguages = loadBqpLanguages();
+        selectedLanguages.forEach(lang => addLanguageTagConfig(lang));
+        languageSelect.addEventListener("change", () => {
+	        const selectedLang = languageSelect.value;
+	        if (!selectedLang) return;
+	        
+	        addLanguageTagConfig(selectedLang);
+	        populateLanguageDropdown();
+            saveBqpLanguages();
+            createBqpModal();
+	    });
+	    addAllButton.addEventListener("click", () => {
+	        AVAILABLE_LANGS.forEach(lang => addLanguageTagConfig(lang));
+	        populateLanguageDropdown();
+            saveBqpLanguages();
+            createBqpModal();
+	    });
+	    removeAllButton.addEventListener("click", () => {
+	    	while (selectedLanguagesDiv.firstChild) {
+			    selectedLanguagesDiv.removeChild(selectedLanguagesDiv.firstChild);
+			}
+			populateLanguageDropdown();
+            saveBqpLanguages();
+			selectedLanguagesDiv.innerHTML = "<i>Will use default language for tracking</i>";
+			createBqpModal();
+	    });
+	    populateLanguageDropdown();
         document.getElementById("bqp-close").addEventListener("click", function() {
             if(document.getElementById("bqp-close").dataset.confirm === 'true') return;
             const oldStartTimestamp = localStorage.getItem(LOCAL_STORAGE_KEY_PREFIX+"start_timstamp");
@@ -327,7 +558,7 @@
             localStorage.setItem(LOCAL_STORAGE_KEY_PREFIX+"result_cache_"+getSelectedLanguage(), null);
             const results = await fetchCompletedQuotes(authToken);
             document.getElementById("bqp-modal").outerHTML = "";
-            createBqpModal(results);
+            createBqpModal();
         });
         document.getElementById("save-settings").addEventListener("click", function() {
             const newStartTimestamp = document.getElementById("start-timestamp").value;
@@ -370,11 +601,11 @@
         	nextQuoteId = getNextQuoteId(quotes,completedQuoteIds,minId);
         }
         if(quotes[quotes.length - 1].id < nextQuoteId) {
-        	console.log('All quotes completed!');
+        	alert(`Congratulations! You have completed all quotes in the category ${getSelectedLanguage()}!`);
         	return;
         }
         
-        if (nextQuoteId !== null) {
+        if (nextQuoteId !== null && nextQuoteId !== undefined && !isNaN(nextQuoteId)) {
             startNextQuote(nextQuoteId);
         } else {
             console.log('All quotes completed! (Probably)');
