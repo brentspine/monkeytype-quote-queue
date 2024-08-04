@@ -6,7 +6,7 @@
 
 
 // @namespace    http://tampermonkey.net/
-// @version      1.4.1
+// @version      1.4.2
 // @match        https://monkeytype.com/*
 // @grant        none
 // 
@@ -561,7 +561,7 @@
             createBqpModal();
         });
         document.getElementById("save-settings").addEventListener("click", function() {
-            const newStartTimestamp = document.getElementById("start-timestamp").value;
+            let newStartTimestamp = document.getElementById("start-timestamp").value;
             if(isNaN(newStartTimestamp)) return;
             if(newStartTimestamp < 0) newStartTimestamp = 0;
             if(newStartTimestamp > Date.now()) newStartTimestamp = Date.now();
