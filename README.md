@@ -1,5 +1,9 @@
 # Monkeytype Quote Queue
 
+### Video Tutorial
+
+[![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/Pkry5tfjUiU0/0.jpg)](https://www.youtube.com/watch?v=Pkry5tfjUiU)
+
 User script to add the "next quote" option. This allows you to type out all quotes after each other. The script actively checks for previous completion.
 
 ## Table of contents
