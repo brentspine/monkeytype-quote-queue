@@ -1,4 +1,4 @@
-const VERSION_ID = "2.0.1"
+const VERSION_ID = "2.0.3"
 
 const MonkeyStates = Object.freeze({
     LOADING: "Loading Page",
@@ -115,7 +115,9 @@ function getMonkeyMode() {
 }
 
 function nextQuote() {
-	startQuoteWithId(getNextQuoteIdForLanguage(getMonkeyMode().language));
+	const nextId = getNextQuoteIdForLanguage(getMonkeyMode().language);
+	if(nextId == null) return;
+	startQuoteWithId(nextId);
 }
 
 async function createBqpModal()  {
@@ -234,7 +236,8 @@ async function createBqpModal()  {
             <div><a href="https://github.com/brentspine/monkeytype-quote-queue/" target="_blank">GitHub</a></div>
             <div>Version ${VERSION_ID}</div>
             <button id="modal-next-quote" style="max-width: 20vw">Reload Next Quote</button>
-            <button id="reload-data" style="max-width: 20vw;" disabled>Reload Data</button>
+            <button id="reload-data" style="max-width: 20vw;cursor: not-allowed !important;
+    pointer-events: all;" disabled>Reload Data</button>
             <button id="save-settings">Save</button>
     	</div></dialog>`;
 	document.getElementById("popups").innerHTML += modal;
@@ -625,6 +628,7 @@ function getNextQuoteIdForLanguage(language) {
 		if(data[key].result != null) continue;
 		return data[key].id;
 	}
+	return null;
 }
 
 function startQuoteWithId(quoteId, attempt=1) {
