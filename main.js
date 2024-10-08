@@ -1,4 +1,4 @@
-const VERSION_ID = "2.0.3"
+const VERSION_ID = "2.0.4"
 
 const MonkeyStates = Object.freeze({
     LOADING: "Loading Page",
@@ -364,7 +364,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
 			const quoteIdNotice = document.getElementById("quote-id-notice");
 			if(quoteId == undefined || quoteId == null) return;
       if(quoteIdNotice !== null) {
-      	quoteIdNotice.innerHTML = `Quote ID: ${quoteId}`;
+      	quoteIdNotice.innerHTML = `Quote ID: ${quoteId}` + (localStorage.getItem("bqp_completed_lang") == 'true' ? " 🏆" : "");
       	return;
       }
       var newButton = `<button class="textButton" id="quote-id-notice">Quote ID: ${quoteId}</button>`;
@@ -626,8 +626,10 @@ function getNextQuoteIdForLanguage(language) {
 	for(key in data) {
 		if(!key.startsWith(language.toUpperCase())) continue;
 		if(data[key].result != null) continue;
+		localStorage.setItem("bqp_completed_lang", false);
 		return data[key].id;
 	}
+	localStorage.setItem("bqp_completed_lang", true);
 	return null;
 }
 
