@@ -1,4 +1,4 @@
-const VERSION_ID = "2.0.4"
+const VERSION_ID = "2.0.5"
 
 const MonkeyStates = Object.freeze({
     LOADING: "Loading Page",
@@ -360,18 +360,23 @@ document.addEventListener("DOMContentLoaded", async function (event) {
 		
 		// Quote ID Notice
 		setInterval(function() {
-			const quoteId = getMonkeyMode().mode2;
-			const quoteIdNotice = document.getElementById("quote-id-notice");
-			if(quoteId == undefined || quoteId == null) return;
-      if(quoteIdNotice !== null) {
-      	quoteIdNotice.innerHTML = `Quote ID: ${quoteId}` + (localStorage.getItem("bqp_completed_lang") == 'true' ? " 🏆" : "");
-      	return;
-      }
-      var newButton = `<button class="textButton" id="quote-id-notice">Quote ID: ${quoteId}</button>`;
-      document.getElementById("testModesNotice").innerHTML += newButton;
-      document.getElementById("quote-id-notice").addEventListener("click", function() {
-         createBqpModal();
-      });
+		    const quoteId = getMonkeyMode().mode2;
+		    const quoteIdNotice = document.getElementById("quote-id-notice");
+		
+		    if (quoteId === undefined || quoteId === null) {
+		        return;
+		    }
+		
+		    if (quoteIdNotice !== null) {
+		    	quoteIdNotice.classList.toggle("hidden", getMonkeyMode().mode !== MonkeyModes.QUOTE.toUpperCase());
+		        quoteIdNotice.innerHTML = `Quote ID: ${quoteId}` + (localStorage.getItem("bqp_completed_lang") === 'true' ? " 🏆" : "");
+		        return;
+		    }
+		
+			// Triggers every time mode is changed, since buttons are cleared
+		    const newButton = `<button class="textButton${getMonkeyMode().mode !== MonkeyModes.QUOTE.toUpperCase() ? " hidden" : ""}" id="quote-id-notice">Quote ID: ${quoteId}</button>`;
+		    document.getElementById("testModesNotice").innerHTML += newButton;
+		    document.getElementById("quote-id-notice").addEventListener("click", createBqpModal);
 		}, 200);
 			
 		let newButton = document.getElementById("saveScreenshotButton").outerHTML;
