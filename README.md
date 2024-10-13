@@ -86,7 +86,7 @@ Close the extension window and reload MonkeyType. The changes should successfull
 
 <i> You can turn off the extension at any time by using the respective dialog as <a href="https://github.com/brentspine/monkeytype-quote-queue/assets/55391576/98ecee87-cf95-4a96-93fd-50db753cb968" target="_blank">seen here</a></i>
 
-### Static <span id="install-static"></span>
+### Static (not recommended) <span id="install-static"></span>
 
 Go to the [latest release](https://github.com/brentspine/monkeytype-quote-queue/releases/) and copy the contents of the appended JS file. Then paste them into the window you just opened. Press save or use CTRL+S.
 
