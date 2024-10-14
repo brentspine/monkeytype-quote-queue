@@ -1,0 +1,26 @@
+{
+    "manifest_version": 3,
+    "name": "Monkeytype Quote Tracker",
+    "version": "3.0.1",
+    "description": "Additional features for quotes on Monkeytype",
+    "permissions": [
+      "activeTab"
+    ],
+    "action": {
+      "default_popup": "popup.html"
+    },
+    "icons": {
+        "16": "nord16.png",
+        "32": "nord32.png",
+        "48": "nord48.png",
+        "128": "nord128.png"
+    },
+    "content_scripts": [
+      {
+        "matches": ["https://monkeytype.com/*"],
+        "js": ["content.js"],
+        "run_at": "document_start"
+      }
+    ]
+  }
+  
