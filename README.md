@@ -1,7 +1,8 @@
 # Monkeytype Quote Queue
 
 ## Update:
-You can now download the latest release as a browser extension. For more details read [here](https://github.com/brentspine/monkeytype-quote-queue/releases/tag/release14)
+
+You can now download the latest release as a browser extension. For more details read [here](https://github.com/brentspine/monkeytype-quote-queue/releases/tag/release15)
 
 ### Video Tutorial
 
