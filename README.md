@@ -2,7 +2,9 @@
 
 ## Update:
 
-You can now download the latest release as a browser extension. For more details read [here](https://github.com/brentspine/monkeytype-quote-queue/releases/tag/release15)
+You can now download the latest release as a browser extension. 
+
+See here: https://chromewebstore.google.com/detail/monkeytype-quote-tracker/ibhkgncanjhainejhdkjcchpgjhlekia
 
 ### Video Tutorial
 
