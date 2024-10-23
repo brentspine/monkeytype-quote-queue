@@ -1,4 +1,4 @@
-const VERSION_ID = "3.1.3"
+const VERSION_ID = "3.1"
 
 const MonkeyStates = Object.freeze({
     LOADING: "Loading Page",
@@ -124,7 +124,9 @@ async function createBqpModal()  {
 	try {
 		document.getElementById("bqp-modal").outerHTML = "";
 	} catch(e) {}
-	let startTimestamp = -1;
+	
+	const latestVersionExtension = localStorage.getItem("bqp_latest_version_extension");
+	const isLatestVersion = latestVersionExtension == VERSION_ID;
 	let timePlayed = 0.0;
   let wordsTyped = 0;
   let charsTyped = 0;
@@ -211,24 +213,6 @@ async function createBqpModal()  {
 				color: var(--text-color);
 			}
 
-			.bqpSvgBg {
-				background: var(--text-color);
-			}
-
-			#bqpCopySelectedLangs {
-				mask-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzNiIgaGVpZ2h0PSIzNiIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJmZWF0aGVyIGZlYXRoZXItY2xpcGJvYXJkIj48cGF0aCBkPSJNMTYgNGgyYTIgMiAwIDAgMSAyIDJ2MTRhMiAyIDAgMCAxLTIgMkg2YTIgMiAwIDAgMS0yLTJWNmEyIDIgMCAwIDEgMi0yaDIiPjwvcGF0aD48cmVjdCB4PSI4IiB5PSIyIiB3aWR0aD0iOCIgaGVpZ2h0PSI0IiByeD0iMSIgcnk9IjEiPjwvcmVjdD48L3N2Zz4=');
-				-webkit-mask-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzNiIgaGVpZ2h0PSIzNiIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJmZWF0aGVyIGZlYXRoZXItY2xpcGJvYXJkIj48cGF0aCBkPSJNMTYgNGgyYTIgMiAwIDAgMSAyIDJ2MTRhMiAyIDAgMCAxLTIgMkg2YTIgMiAwIDAgMS0yLTJWNmEyIDIgMCAwIDEgMi0yaDIiPjwvcGF0aD48cmVjdCB4PSI4IiB5PSIyIiB3aWR0aD0iOCIgaGVpZ2h0PSI0IiByeD0iMSIgcnk9IjEiPjwvcmVjdD48L3N2Zz4=');
-				height: 36px;
-				width: 36px;
-			}
-
-			#bqpInsertSelectedLangs {
-				mask-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzNiIgaGVpZ2h0PSIzNiIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJmZWF0aGVyIGZlYXRoZXItY29weSI+PHJlY3QgeD0iOSIgeT0iOSIgd2lkdGg9IjEzIiBoZWlnaHQ9IjEzIiByeD0iMiIgcnk9IjIiPjwvcmVjdD48cGF0aCBkPSJNNSAxNUg0YTIgMiAwIDAgMS0yLTJWNGEyIDIgMCAwIDEgMi0yaDlhMiAyIDAgMCAxIDIgMnYxIj48L3BhdGg+PC9zdmc+');
-				-webkit-mask-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzNiIgaGVpZ2h0PSIzNiIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJmZWF0aGVyIGZlYXRoZXItY29weSI+PHJlY3QgeD0iOSIgeT0iOSIgd2lkdGg9IjEzIiBoZWlnaHQ9IjEzIiByeD0iMiIgcnk9IjIiPjwvcmVjdD48cGF0aCBkPSJNNSAxNUg0YTIgMiAwIDAgMS0yLTJWNGEyIDIgMCAwIDEgMi0yaDlhMiAyIDAgMCAxIDIgMnYxIj48L3BhdGg+PC9zdmc+');
-				height: 36px;
-				width: 36px;
-			}
-
     	</style>
     	<dialog id="bqp-modal" class="modalWrapper" style="opacity: 1;"><div class="modal" style="opacity: 1; background: var(--bg-color);border-radius: var(--roundness);padding: 2rem;display: grid;gap: 1rem;width: 80vw;max-width: 1000px;height: 80vh;grid-template-rows: auto 1fr;">
     		<div>
@@ -240,8 +224,6 @@ async function createBqpModal()  {
 			        </select>
 			        <button id="bqpRemoveAllButton">Remove All</button>
 			        <button id="bqpAddAllButton">Add All</button>
-					<span id="bqpCopySelectedLangs" class="bqpSvgBg"></span>
-					<span id="bqpInsertSelectedLangs" class="bqpSvgBg"></span>
 	    		</div>
 	    		<div id="bqpSelectedLanguages"></div>
     		</div>
@@ -254,7 +236,8 @@ async function createBqpModal()  {
                 <p id="words-typed">Chars typed: ${charsTyped.toLocaleString()}</p>
             </div>
             <div><a href="https://github.com/brentspine/monkeytype-quote-queue/" target="_blank">GitHub</a></div>
-            <div>Version ${VERSION_ID}</div>
+            <div>Version ${VERSION_ID} <span ${(isLatestVersion) ? "" : 'style="display: none"'}>(Latest)</span></div>
+			<div ${(isLatestVersion) ? 'style="display: none;"' : 'style="cursor:pointer;"'} id="bqp-update-frommodal">There's a newer version available, click here to check (v${latestVersionExtension})</div>
             <button id="modal-next-quote" style="max-width: 20vw">Reload Next Quote</button>
             <button id="modal-fetch-quotes" style="max-width: 20vw;">Fetch quote changes</button>
             <button id="reload-data" class="hidden" style="max-width: 20vw;cursor: not-allowed !important;
@@ -274,6 +257,9 @@ async function createBqpModal()  {
 		document.getElementById("reload-data").innerHTML = "Reloading...";
 		await resetData();
 		createBqpModal();
+	});
+	document.getElementById("bqp-update-frommodal").addEventListener("click", function() {
+		window.open("https://github.com/brentspine/monkeytype-quote-queue/releases");
 	});
 	bqplangs.forEach(lang => addLanguageTagConfig(lang));
 	populateLanguageDropdown();
@@ -382,7 +368,14 @@ document.addEventListener("DOMContentLoaded", async function (event) {
 				}
 	    }, 500);
 			
-		
+		fetch("https://brentspine.github.io/monkeytype-quote-queue/versions.json")
+			.then(response => response.json())
+			.then(data => {
+				if (data.extension) {
+					localStorage.setItem("bqp_latest_version_extension", data.extension);
+				}
+			})
+			.catch(error => console.error('Error fetching version:', error));
 		
 		// Quote ID Notice
 		setInterval(function() {
