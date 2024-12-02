@@ -4,7 +4,7 @@
     "version": "3.2",
     "description": "Additional features for quotes on Monkeytype",
     "action": {
-      "default_popup": "popup.html"
+        "default_popup": "popup.html"
     },
     "icons": {
         "16": "nord16.png",
@@ -13,11 +13,16 @@
         "128": "nord128.png"
     },
     "content_scripts": [
-      {
-        "matches": ["https://monkeytype.com/*"],
-        "js": ["content.js"],
-        "run_at": "document_start"
-      }
-    ]
-  }
-  
+        {
+            "matches": ["https://monkeytype.com/*"],
+            "js": ["content.js"],
+            "run_at": "document_start"
+        }
+    ],
+    "browser_specific_settings": {
+        "gecko": {
+            "id": "{b93975aa-c001-3439-7903-49073714c431}",
+            "strict_min_version": "129.0"
+        }
+    }
+}
