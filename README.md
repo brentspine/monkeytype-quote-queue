@@ -6,6 +6,12 @@ You can now download the latest release as a browser extension.
 
 See here: https://chromewebstore.google.com/detail/monkeytype-quote-tracker/ibhkgncanjhainejhdkjcchpgjhlekia
 
+## Todo:
+
+ - Paste data from other source
+ - Skip Quote
+ - Paste language tags
+
 ### Video Tutorial
 
 [![Youtube thumbnail for the video tutorial](https://img.youtube.com/vi/Pkry5tfjUiU/0.jpg)](https://www.youtube.com/watch?v=Pkry5tfjUiU)

@@ -1,4 +1,4 @@
-const VERSION_ID = "3.1.3"
+const VERSION_ID = "3.2"
 
 const MonkeyStates = Object.freeze({
     LOADING: "Loading Page",
@@ -162,76 +162,76 @@ async function createBqpModal()  {
   const seconds = Math.floor(timePlayed) % 60;
   timePlayedString = `${days > 0 ? days + "d " : ""}${hours > 0 ? hours + "h " : ""}${minutes}m ${seconds}s`;
 	let modal = `
-    	<style>
-    		#bqp-modal select {
-			    width: 100%;
-			    margin-bottom: 10px;
-			    padding: 8px;
-			    font-size: 14px;
-			    border-radius: var(--roundness);
-    			background: var(--sub-alt-color);
-    			color: var(--text-color);
-			}
-			
-			#bqpSelectedLanguages {
-			    display: flex;
-			    flex-wrap: wrap;
-			}
-			#bqpRemoveAllButton {
-				margin-left: 12px;
-				min-width: 150px;
-			}
-			#bqpAddAllButton {
-				margin-left: 12px;
-				min-width: 150px;
-			}
-			
-			.language-tag {
-			    background: var(--sub-alt-color);
-			    border-radius: 4px;
-			    padding: 5px 10px;
-			    margin: 5px;
-			    display: flex;
-			    align-items: center;
-			}
-			
-			.language-tag span {
-			    margin-right: 10px;
-			    font-size: 14px;
-			}
-			
-			.language-tag button {
-		        background: none;
-			    border: none;
-			    cursor: pointer;
-			    font-size: 12px;
-			    padding: 0;
-			}
-			.language-tag button:hover {
-				color: var(--text-color);
-			}
-
-			.bqpSvgBg {
-				background: var(--text-color);
-			}
-
-			#bqpCopySelectedLangs {
-				mask-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzNiIgaGVpZ2h0PSIzNiIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJmZWF0aGVyIGZlYXRoZXItY2xpcGJvYXJkIj48cGF0aCBkPSJNMTYgNGgyYTIgMiAwIDAgMSAyIDJ2MTRhMiAyIDAgMCAxLTIgMkg2YTIgMiAwIDAgMS0yLTJWNmEyIDIgMCAwIDEgMi0yaDIiPjwvcGF0aD48cmVjdCB4PSI4IiB5PSIyIiB3aWR0aD0iOCIgaGVpZ2h0PSI0IiByeD0iMSIgcnk9IjEiPjwvcmVjdD48L3N2Zz4=');
-				-webkit-mask-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzNiIgaGVpZ2h0PSIzNiIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJmZWF0aGVyIGZlYXRoZXItY2xpcGJvYXJkIj48cGF0aCBkPSJNMTYgNGgyYTIgMiAwIDAgMSAyIDJ2MTRhMiAyIDAgMCAxLTIgMkg2YTIgMiAwIDAgMS0yLTJWNmEyIDIgMCAwIDEgMi0yaDIiPjwvcGF0aD48cmVjdCB4PSI4IiB5PSIyIiB3aWR0aD0iOCIgaGVpZ2h0PSI0IiByeD0iMSIgcnk9IjEiPjwvcmVjdD48L3N2Zz4=');
-				height: 36px;
-				width: 36px;
-			}
-
-			#bqpInsertSelectedLangs {
-				mask-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzNiIgaGVpZ2h0PSIzNiIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJmZWF0aGVyIGZlYXRoZXItY29weSI+PHJlY3QgeD0iOSIgeT0iOSIgd2lkdGg9IjEzIiBoZWlnaHQ9IjEzIiByeD0iMiIgcnk9IjIiPjwvcmVjdD48cGF0aCBkPSJNNSAxNUg0YTIgMiAwIDAgMS0yLTJWNGEyIDIgMCAwIDEgMi0yaDlhMiAyIDAgMCAxIDIgMnYxIj48L3BhdGg+PC9zdmc+');
-				-webkit-mask-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzNiIgaGVpZ2h0PSIzNiIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJmZWF0aGVyIGZlYXRoZXItY29weSI+PHJlY3QgeD0iOSIgeT0iOSIgd2lkdGg9IjEzIiBoZWlnaHQ9IjEzIiByeD0iMiIgcnk9IjIiPjwvcmVjdD48cGF0aCBkPSJNNSAxNUg0YTIgMiAwIDAgMS0yLTJWNGEyIDIgMCAwIDEgMi0yaDlhMiAyIDAgMCAxIDIgMnYxIj48L3BhdGg+PC9zdmc+');
-				height: 36px;
-				width: 36px;
-			}
-
-    	</style>
     	<dialog id="bqp-modal" class="modalWrapper" style="opacity: 1;"><div class="modal" style="opacity: 1; background: var(--bg-color);border-radius: var(--roundness);padding: 2rem;display: grid;gap: 1rem;width: 80vw;max-width: 1000px;height: 80vh;grid-template-rows: auto 1fr;">
-    		<div>
+    		<style>
+				#bqp-modal select {
+					width: 100%;
+					margin-bottom: 10px;
+					padding: 8px;
+					font-size: 14px;
+					border-radius: var(--roundness);
+					background: var(--sub-alt-color);
+					color: var(--text-color);
+				}
+				
+				#bqpSelectedLanguages {
+					display: flex;
+					flex-wrap: wrap;
+				}
+				#bqpRemoveAllButton {
+					margin-left: 12px;
+					min-width: 150px;
+				}
+				#bqpAddAllButton {
+					margin-left: 12px;
+					min-width: 150px;
+				}
+				
+				.language-tag {
+					background: var(--sub-alt-color);
+					border-radius: 4px;
+					padding: 5px 10px;
+					margin: 5px;
+					display: flex;
+					align-items: center;
+				}
+				
+				.language-tag span {
+					margin-right: 10px;
+					font-size: 14px;
+				}
+				
+				.language-tag button {
+					background: none;
+					border: none;
+					cursor: pointer;
+					font-size: 12px;
+					padding: 0;
+				}
+				.language-tag button:hover {
+					color: var(--text-color);
+				}
+
+				.bqpSvgBg {
+					background: var(--text-color);
+				}
+
+				#bqpCopySelectedLangs {
+					mask-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzNiIgaGVpZ2h0PSIzNiIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJmZWF0aGVyIGZlYXRoZXItY2xpcGJvYXJkIj48cGF0aCBkPSJNMTYgNGgyYTIgMiAwIDAgMSAyIDJ2MTRhMiAyIDAgMCAxLTIgMkg2YTIgMiAwIDAgMS0yLTJWNmEyIDIgMCAwIDEgMi0yaDIiPjwvcGF0aD48cmVjdCB4PSI4IiB5PSIyIiB3aWR0aD0iOCIgaGVpZ2h0PSI0IiByeD0iMSIgcnk9IjEiPjwvcmVjdD48L3N2Zz4=');
+					-webkit-mask-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzNiIgaGVpZ2h0PSIzNiIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJmZWF0aGVyIGZlYXRoZXItY2xpcGJvYXJkIj48cGF0aCBkPSJNMTYgNGgyYTIgMiAwIDAgMSAyIDJ2MTRhMiAyIDAgMCAxLTIgMkg2YTIgMiAwIDAgMS0yLTJWNmEyIDIgMCAwIDEgMi0yaDIiPjwvcGF0aD48cmVjdCB4PSI4IiB5PSIyIiB3aWR0aD0iOCIgaGVpZ2h0PSI0IiByeD0iMSIgcnk9IjEiPjwvcmVjdD48L3N2Zz4=');
+					height: 36px;
+					width: 36px;
+				}
+
+				#bqpInsertSelectedLangs {
+					mask-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzNiIgaGVpZ2h0PSIzNiIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJmZWF0aGVyIGZlYXRoZXItY29weSI+PHJlY3QgeD0iOSIgeT0iOSIgd2lkdGg9IjEzIiBoZWlnaHQ9IjEzIiByeD0iMiIgcnk9IjIiPjwvcmVjdD48cGF0aCBkPSJNNSAxNUg0YTIgMiAwIDAgMS0yLTJWNGEyIDIgMCAwIDEgMi0yaDlhMiAyIDAgMCAxIDIgMnYxIj48L3BhdGg+PC9zdmc+');
+					-webkit-mask-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzNiIgaGVpZ2h0PSIzNiIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJmZWF0aGVyIGZlYXRoZXItY29weSI+PHJlY3QgeD0iOSIgeT0iOSIgd2lkdGg9IjEzIiBoZWlnaHQ9IjEzIiByeD0iMiIgcnk9IjIiPjwvcmVjdD48cGF0aCBkPSJNNSAxNUg0YTIgMiAwIDAgMS0yLTJWNGEyIDIgMCAwIDEgMi0yaDlhMiAyIDAgMCAxIDIgMnYxIj48L3BhdGg+PC9zdmc+');
+					height: 36px;
+					width: 36px;
+				}
+
+			</style>
+			<div>
     			<div style="display: flex; flex-direction: row; justify-content: space-between;align-items:center;"><h2>Quote Progress</h2><h3 id="bqp-close" style="cursor:pointer">&times;</h3></div>
 	    		<div style="display: flex; justify-content: center;">
 	    			<select id="bqpLanguageSelect">
@@ -240,8 +240,8 @@ async function createBqpModal()  {
 			        </select>
 			        <button id="bqpRemoveAllButton">Remove All</button>
 			        <button id="bqpAddAllButton">Add All</button>
-					<span id="bqpCopySelectedLangs" class="bqpSvgBg"></span>
-					<span id="bqpInsertSelectedLangs" class="bqpSvgBg"></span>
+					<!-- <span id="bqpCopySelectedLangs" class="bqpSvgBg"></span> -->
+					<!-- <span id="bqpInsertSelectedLangs" class="bqpSvgBg"></span> -->
 	    		</div>
 	    		<div id="bqpSelectedLanguages"></div>
     		</div>
@@ -256,24 +256,17 @@ async function createBqpModal()  {
             <div><a href="https://github.com/brentspine/monkeytype-quote-queue/" target="_blank">GitHub</a></div>
             <div>Version ${VERSION_ID}</div>
             <button id="modal-next-quote" style="max-width: 20vw">Reload Next Quote</button>
-            <button id="modal-fetch-quotes" style="max-width: 20vw;">Fetch quote changes</button>
-            <button id="reload-data" class="hidden" style="max-width: 20vw;cursor: not-allowed !important;
-    pointer-events: all;" disabled>Reset Data</button>
-            <button id="save-settings">Save</button>
+            <button id="modal-skip-quote" class="hidden" style="max-width: 20vw;">Skip current quote</button>
+            <button id="bqp-debug-options">Debug Options</button>
     	</div></dialog>`;
 	document.getElementById("popups").innerHTML += modal;
 	document.getElementById("bqp-close").addEventListener("click", function() {
 		document.getElementById("bqp-modal").outerHTML = "";
+		document.querySelector("#popups style").outerHTML = "";
 	});
-	document.getElementById("modal-fetch-quotes").addEventListener("click", async function() {
-		document.getElementById("modal-fetch-quotes").innerHTML = "Loading...";
-		await fetchQuotes();
-		createBqpModal();
-	});
-	document.getElementById("reload-data").addEventListener("click", async function() {
-		document.getElementById("reload-data").innerHTML = "Reloading...";
-		await resetData();
-		createBqpModal();
+	document.getElementById("bqp-debug-options").addEventListener("click", function() {
+		document.getElementById("bqp-modal").outerHTML = "";
+		createBqpDebugOptions();
 	});
 	bqplangs.forEach(lang => addLanguageTagConfig(lang));
 	populateLanguageDropdown();
@@ -301,6 +294,101 @@ async function createBqpModal()  {
       nextQuote();
   });
 	return;
+}
+
+async function createBqpDebugOptions() {
+	let debugModal = `
+		<dialog id="bqp-debug-modal" class="modalWrapper" style="opacity: 1;">
+		<style>
+			.bqp-debug-buttons button {
+				margin: 5px 5px 5px 0;
+			}
+		</style>
+		<div class="modal" style="opacity: 1; background: var(--bg-color);border-radius: var(--roundness);padding: 2rem;display: grid;width: 80vw;max-width: 1000px;height: 80vh;grid-template-rows: auto auto 1fr;">
+			<div>
+				<div style="display: flex; flex-direction: row; justify-content: space-between;align-items:center;">
+					<h2>Debug Options</h2>
+					<h3 id="bqp-debug-close" style="cursor:pointer">&times;</h3>
+				</div>
+			</div>
+			<div class="bqp-debug-buttons">
+				<button id="bqp-debug-reset">Reset Data</button>
+				<button id="bqp-debug-refetch">Refetch Results</button>
+				<button id="bqp-debug-quote-changes">Fetch Quote Changes</button>
+			</div>
+			<div style="display: flex; justify-content: flex-end; align-items: flex-start; flex-direction: column;">
+				<p>
+					You discovered a bug?<br>
+					You have problems using the extension?<br>
+					&nbsp;-> Then feel free to open an issue on <a target="_blank" href="https://github.com/brentspine/monkeytype-quote-queue/issues">Github</a>
+				</p>
+				<button id="bqp-debug-return" style="width: 100%">Return</button>
+			</div>
+		</div>
+		</dialog>
+	`;
+	document.getElementById("popups").innerHTML += debugModal;
+	await delay(100);
+	document.getElementById("bqp-debug-return").addEventListener("click", function() {
+		document.getElementById("bqp-debug-modal").outerHTML = "";
+		createBqpModal();
+	});
+	document.getElementById("bqp-debug-close").addEventListener("click", function() {
+		document.getElementById("bqp-debug-modal").outerHTML = "";
+	});
+	document.getElementById("bqp-debug-reset").addEventListener("click", async function() {
+		document.getElementById("bqp-debug-modal").outerHTML = "";
+		let confirmModal = `
+		<dialog id="bqp-debug-reset-confirm-modal" class="modalWrapper" style="opacity: 1;">
+		<style>
+			#bqp-debug-reset-confirm-modal button {
+				background: var(--sub-alt-color);
+				border: none;
+				padding: 8px;
+				border-radius: var(--roundness);
+				cursor: pointer;
+			}
+		
+			#bqp-debug-reset-cancel {
+				color: green;
+			}
+			#bqp-debug-reset-confirm {
+				color: red;
+			}
+		</style>
+		<div class="modal" style="opacity: 1; background: var(--bg-color);border-radius: var(--roundness);padding: 2rem;display: flex;gap: 1rem;width: 80vw;max-width: 1000px;height: 80vh; align-items: center; justify-content: center;">
+			<h1>Are you sure you want to reset all data?</h1>
+			<button id="bqp-debug-reset-confirm">Confirm</button>
+			<button id="bqp-debug-reset-cancel">Cancel</button>
+		<div>
+		</dialog>`;
+		document.getElementById("popups").innerHTML += confirmModal;
+		document.getElementById("bqp-debug-reset-confirm").addEventListener("click", async function() {
+			document.getElementById("bqp-debug-reset-confirm").innerHTML = "Resetting...";
+			await resetData(true);
+			document.getElementById("bqp-debug-reset-confirm-modal").outerHTML = "";
+		});
+		document.getElementById("bqp-debug-reset-cancel").addEventListener("click", function() {
+			document.getElementById("bqp-debug-reset-confirm-modal").outerHTML = "";
+			createBqpDebugOptions();
+		});
+	});
+	document.getElementById("bqp-debug-refetch").addEventListener("click", async function() {
+		document.getElementById("bqp-debug-refetch").innerHTML = "Refetching...";
+		await refetchResults();
+		document.getElementById("bqp-debug-refetch").innerHTML = "Refetched!";
+		setTimeout(function() {
+			document.getElementById("bqp-debug-refetch").innerHTML = "Refetch Results";
+		}, 1000);
+	});
+	document.getElementById("bqp-debug-quote-changes").addEventListener("click", async function() {
+		document.getElementById("bqp-debug-quote-changes").innerHTML = "Refetching...";
+		await fetchQuotes();
+		document.getElementById("bqp-debug-quote-changes").innerHTML = "Fetched!";
+		setTimeout(function() {
+			document.getElementById("bqp-debug-quote-changes").innerHTML = "Fetch Quote Changes";
+		}, 1000);
+	});
 }
 
 function populateLanguageDropdown() {
@@ -366,7 +454,16 @@ document.addEventListener("DOMContentLoaded", async function (event) {
 			}, 100);
 		} else {
 			await waitForAnyState(MonkeyStates.IDLE);
-			await refetchResults();
+			const completedTests = await getCompletedTests();
+			const latestCompleted = localStorage.getItem("bqp_latest_completion_amount");
+			const completionsMissing = completedTests - latestCompleted;
+			if(completionsMissing > 0) {
+				let id = showNotification(`You have ${completionsMissing} new completions from another device! Open the debug options from the quote notice to fetch them! (Click to open)`, "notice");
+				document.getElementById(id).addEventListener("click", function() {
+					document.getElementById(id).outerHTML = "";
+					createBqpDebugOptions();
+				});
+			}
 			setTimeout(async function() {
 				await waitForAnyState(MonkeyStates.IDLE);
 				nextQuote();
@@ -443,6 +540,27 @@ document.addEventListener("DOMContentLoaded", async function (event) {
     }, 500);
 });
 
+function showNotification(message, type = "notice") {
+	const id = Math.random().toString(36).substring(7);
+	let notification = `
+		<div class="notif ${type} important" id="${id}" style="">
+			<div class="message">
+				<div class="title">
+					<div class="icon">
+						<i class="fas fa-info-circle"></i>
+					</div>
+					Notice
+				</div>
+				${message}
+			</div>
+		</div>
+	`;
+	document.querySelector("#notificationCenter .history").innerHTML += notification;
+	setTimeout(function() {
+		document.getElementById(id).outerHTML = "";
+	}, 6000);
+	return id;
+}
 
 function getMonkeyState() {
     const pageLoading = document.getElementById("pageLoading");
@@ -538,16 +656,15 @@ function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function resetData() {
+async function resetData(doRefetchResults = true) {
     localStorage.setItem("bqp_latest_completion_amount", 0);
     await fetchQuotes(true);
     // Necessary?
     //await delay(5000);
-    await refetchResults();
+    if(doRefetchResults) await refetchResults();
 }
 
-// https://github.com/monkeytypegame/monkeytype/blob/f6a27b2d1886dd79ba26d1e2eae94f0e9401c851/backend/src/dal/result.ts#L95
-async function refetchResults() {
+async function getCompletedTests() {
 	const authToken = await getAuthToken();
 	const userResponse = await fetch("https://api.monkeytype.com/users", {
 	    headers: {
@@ -556,6 +673,13 @@ async function refetchResults() {
 	});
 	const userData = await userResponse.json();
 	const completedTests = userData.data.completedTests;
+	return completedTests;
+}
+
+// https://github.com/monkeytypegame/monkeytype/blob/f6a27b2d1886dd79ba26d1e2eae94f0e9401c851/backend/src/dal/result.ts#L95
+async function refetchResults() {
+	const authToken = await getAuthToken();
+	const completedTests = await getCompletedTests();
 	const latestCompleted = localStorage.getItem("bqp_latest_completion_amount");
 	const completionsMissing = completedTests - latestCompleted;
 	localStorage.setItem("bqp_latest_completion_amount", completedTests);
@@ -563,6 +687,8 @@ async function refetchResults() {
 	const limit = 1000;
 	// W Code
 	let page = Math.floor(((completionsMissing-1) / limit))+1;
+	// :( Doesn't allow offset over 1000
+	page = 1;
 	while(page > 0) {
 		page--;
 		// Earliest possible for API
