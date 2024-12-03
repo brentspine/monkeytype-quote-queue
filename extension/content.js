@@ -1,4 +1,4 @@
-const VERSION_ID = "3.2"
+const VERSION_ID = "3.3"
 
 const MonkeyStates = Object.freeze({
     LOADING: "Loading Page",
@@ -120,11 +120,23 @@ function nextQuote() {
 	startQuoteWithId(nextId);
 }
 
+function waitForNoBqpModalsShown() {
+	return new Promise(resolve => {
+		const check = () => {
+			if(document.querySelector(".bqp-specific-modal") !== null) {
+				setTimeout(check, 100);
+			} else {
+				resolve();
+			}
+		};
+		check();
+	});
+}
+
 async function createBqpModal()  {
 	try {
 		document.getElementById("bqp-modal").outerHTML = "";
 	} catch(e) {}
-	let startTimestamp = -1;
 	let timePlayed = 0.0;
   let wordsTyped = 0;
   let charsTyped = 0;
@@ -157,13 +169,22 @@ async function createBqpModal()  {
 	}
 	completionPercentage = ((completedQuotes / totalQuotes) * 100).toFixed(2);
 	const days = Math.floor(timePlayed / (60 * 60 * 24));
-  const hours = Math.floor(timePlayed / (60 * 60)) % 24;
-  const minutes = Math.floor(timePlayed / 60) % 60;
-  const seconds = Math.floor(timePlayed) % 60;
-  timePlayedString = `${days > 0 ? days + "d " : ""}${hours > 0 ? hours + "h " : ""}${minutes}m ${seconds}s`;
+	const hours = Math.floor(timePlayed / (60 * 60)) % 24;
+	const minutes = Math.floor(timePlayed / 60) % 60;
+	const seconds = Math.floor(timePlayed) % 60;
+	timePlayedString = `${days > 0 ? days + "d " : ""}${hours > 0 ? hours + "h " : ""}${minutes}m ${seconds}s`;
+	const completedCurrent = data[getMonkeyMode().language + "_" + getMonkeyMode().mode2]?.result !== null;
+	const skippedCurrent = JSON.parse(localStorage.getItem("bqp_skipped_quotes"))?.includes(getMonkeyMode().language + "_" + getMonkeyMode().mode2);
 	let modal = `
-    	<dialog id="bqp-modal" class="modalWrapper" style="opacity: 1;"><div class="modal" style="opacity: 1; background: var(--bg-color);border-radius: var(--roundness);padding: 2rem;display: grid;gap: 1rem;width: 80vw;max-width: 1000px;height: 80vh;grid-template-rows: auto 1fr;">
+    	<dialog id="bqp-modal" class="modalWrapper bqp-specific-modal" style="opacity: 1;"><div class="modal" style="opacity: 1; background: var(--bg-color);border-radius: var(--roundness);padding: 2rem;display: grid;gap: 1rem;width: 80vw;max-width: 1000px;height: 80vh;grid-template-rows: auto 1fr;">
     		<style>
+				.not-allowed {
+					cursor: not-allowed;
+					pointer-events: all!important;
+					background-color: var(--sub-alt-color)!important;
+					color: var(--text-color)!important;
+				}
+
 				#bqp-modal select {
 					width: 100%;
 					margin-bottom: 10px;
@@ -256,13 +277,39 @@ async function createBqpModal()  {
             <div><a href="https://github.com/brentspine/monkeytype-quote-queue/" target="_blank">GitHub</a></div>
             <div>Version ${VERSION_ID}</div>
             <button id="modal-next-quote" style="max-width: 20vw">Reload Next Quote</button>
-            <button id="modal-skip-quote" class="hidden" style="max-width: 20vw;">Skip current quote</button>
-            <button id="bqp-debug-options">Debug Options</button>
+            <button id="modal-skip-current-quote" ${(!completedCurrent && !skippedCurrent ? "" : "class='not-allowed' disabled")} style="max-width: 20vw;">Skip current quote</button>
+            <button id="modal-skip-next-quote" class="hidden" style="max-width: 20vw;">No more quotes to skip</button>
+			<button id="bqp-debug-options">Debug Options</button>
     	</div></dialog>`;
 	document.getElementById("popups").innerHTML += modal;
+	document.getElementById("modal-skip-current-quote").addEventListener("click", async function() {
+		addSkipQuote(getMonkeyMode().language, getMonkeyMode().mode2);
+		document.getElementById("modal-skip-current-quote").classList.add("hidden");
+		document.getElementById("modal-skip-next-quote").classList.remove("hidden");
+		const nextId = getNextQuoteIdForLanguage(getMonkeyMode().language);
+		if(nextId != null) {
+			document.getElementById("modal-skip-next-quote").innerHTML = "Skip quote " + nextId;
+		} else {
+			document.getElementById("modal-skip-next-quote").disabled = true;
+		}
+		await waitForNoBqpModalsShown();
+		nextQuote();
+	});
+	document.getElementById("modal-skip-next-quote").addEventListener("click", async function() {
+		addSkipQuote(getMonkeyMode().language, getNextQuoteIdForLanguage(getMonkeyMode().language));
+		const nextId = getNextQuoteIdForLanguage(getMonkeyMode().language);
+		if(nextId != null) {
+			document.getElementById("modal-skip-next-quote").innerHTML = "Skip quote " + nextId;
+		} else {
+			document.getElementById("modal-skip-next-quote").disabled = true;
+			document.getElementById("modal-skip-next-quote").innerHTML = "No more quotes to skip";
+			document.getElementById("modal-skip-next-quote").classList.add("not-allowed");
+		}
+		// Next quote and waitForNoBqpModalsShown() is already triggered from modal-skip-current-quote
+	});
 	document.getElementById("bqp-close").addEventListener("click", function() {
 		document.getElementById("bqp-modal").outerHTML = "";
-		document.querySelector("#popups style").outerHTML = "";
+		// document.querySelector("#popups style").outerHTML = "";
 	});
 	document.getElementById("bqp-debug-options").addEventListener("click", function() {
 		document.getElementById("bqp-modal").outerHTML = "";
@@ -297,8 +344,11 @@ async function createBqpModal()  {
 }
 
 async function createBqpDebugOptions() {
+	try {
+		document.getElementById("bqp-debug-modal").outerHTML = "";
+	} catch(e) {}
 	let debugModal = `
-		<dialog id="bqp-debug-modal" class="modalWrapper" style="opacity: 1;">
+		<dialog id="bqp-debug-modal" class="modalWrapper bqp-specific-modal" style="opacity: 1;">
 		<style>
 			.bqp-debug-buttons button {
 				margin: 5px 5px 5px 0;
@@ -339,7 +389,7 @@ async function createBqpDebugOptions() {
 	document.getElementById("bqp-debug-reset").addEventListener("click", async function() {
 		document.getElementById("bqp-debug-modal").outerHTML = "";
 		let confirmModal = `
-		<dialog id="bqp-debug-reset-confirm-modal" class="modalWrapper" style="opacity: 1;">
+		<dialog id="bqp-debug-reset-confirm-modal" class="modalWrapper bqp-specific-modal" style="opacity: 1;">
 		<style>
 			#bqp-debug-reset-confirm-modal button {
 				background: var(--sub-alt-color);
@@ -464,6 +514,9 @@ document.addEventListener("DOMContentLoaded", async function (event) {
 					createBqpDebugOptions();
 				});
 			}
+			if(completionsMissing < 0) {
+				localStorage.setItem("bqp_latest_completion_amount", completedTests);
+			}
 			setTimeout(async function() {
 				await waitForAnyState(MonkeyStates.IDLE);
 				nextQuote();
@@ -534,7 +587,9 @@ document.addEventListener("DOMContentLoaded", async function (event) {
     		const timestamp = Date.now();
     		const rawWpm = parseFloat(document.querySelector("#result .morestats .raw .bottom").getAttribute('aria-label').match(/(\d+(\.\d+)?)/)[0]);
     		const wpm = parseFloat(document.querySelector("#result .stats .wpm .bottom").getAttribute('aria-label').match(/(\d+(\.\d+)?)/)[0]);
-    		saveQuoteResult(monkeyMode.language, monkeyMode.mode2, acc, testDuration, timestamp, rawWpm, wpm);
+    		// Increase completion amount
+			localStorage.setItem("bqp_latest_completion_amount", parseInt(localStorage.getItem("bqp_latest_completion_amount")) + 1);
+			saveQuoteResult(monkeyMode.language, monkeyMode.mode2, acc, testDuration, timestamp, rawWpm, wpm);
     		console.log("Saved result " + monkeyMode.mode2);
     	}
     }, 500);
@@ -793,15 +848,32 @@ async function fetchQuotes(resetProgress = false) {
     await promise;
 }
 
+function addSkipQuote(lang, id) {
+	const langandid = lang + "_" + id;
+	let skipQuotes = JSON.parse(localStorage.getItem("bqp_skip_quotes") ?? "{}");
+	skipQuotes[langandid] = true;
+	localStorage.setItem("bqp_skip_quotes", JSON.stringify(skipQuotes));
+}
+
+function removeAddSkipQuote(langandid) {
+	let skipQuotes = JSON.parse(localStorage.getItem("bqp_skip_quotes") ?? "{}");
+	delete skipQuotes[langandid];
+	localStorage.setItem("bqp_skip_quotes", JSON.stringify(skipQuotes));
+}
+
 function getNextQuoteIdForLanguage(language) {
 	const data = JSON.parse(localStorage.getItem("bqp_data"));
+	const skipQuotes = JSON.parse(localStorage.getItem("bqp_skip_quotes") ?? "{}");
+	let completedLang = true;
 	for(key in data) {
 		if(!key.startsWith(language.toUpperCase())) continue;
 		if(data[key].result != null) continue;
+		completedLang = false;
+		if(skipQuotes[key]) continue;
 		localStorage.setItem("bqp_completed_lang", false);
 		return data[key].id;
 	}
-	localStorage.setItem("bqp_completed_lang", true);
+	localStorage.setItem("bqp_completed_lang", completedLang);
 	return null;
 }
 
