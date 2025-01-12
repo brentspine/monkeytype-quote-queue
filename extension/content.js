@@ -1,4 +1,4 @@
-const VERSION_ID = "3.3"
+const VERSION_ID = "3.4.0"
 
 const MonkeyStates = Object.freeze({
     LOADING: "Loading Page",
@@ -277,7 +277,7 @@ async function createBqpModal()  {
             <div><a href="https://github.com/brentspine/monkeytype-quote-queue/" target="_blank">GitHub</a></div>
             <div>Version ${VERSION_ID}</div>
             <button id="modal-next-quote" style="max-width: 20vw">Reload Next Quote</button>
-            <button id="modal-skip-current-quote" ${(!completedCurrent && !skippedCurrent ? "" : "class='not-allowed' disabled")} style="max-width: 20vw;">Skip current quote</button>
+            <button id="modal-skip-current-quote" ${(!completedCurrent && !skippedCurrent ? "" : 'class="not-allowed" disabled aria-label="Can\'t skip completed quote"')} style="max-width: 20vw;">Skip current quote</button>
             <button id="modal-skip-next-quote" class="hidden" style="max-width: 20vw;">No more quotes to skip</button>
 			<button id="bqp-debug-options">Debug Options</button>
     	</div></dialog>`;
@@ -365,6 +365,9 @@ async function createBqpDebugOptions() {
 				<button id="bqp-debug-reset">Reset Data</button>
 				<button id="bqp-debug-refetch">Refetch Results</button>
 				<button id="bqp-debug-quote-changes">Fetch Quote Changes</button>
+				<button id="bqp-debug-reset-skips">Reset skipped quotes</button>
+				<button id="bqp-debug-import-data">Import data</button>
+				<button id="bqp-debug-export-data">Export data</button>
 			</div>
 			<div style="display: flex; justify-content: flex-end; align-items: flex-start; flex-direction: column;">
 				<p>
@@ -438,6 +441,35 @@ async function createBqpDebugOptions() {
 		setTimeout(function() {
 			document.getElementById("bqp-debug-quote-changes").innerHTML = "Fetch Quote Changes";
 		}, 1000);
+	});
+	document.getElementById("bqp-debug-reset-skips").addEventListener("click", async function() {
+		resetSkipQuote();
+		document.getElementById("bqp-debug-reset-skips").innerHTML = "Success!";
+		setTimeout(function() {
+			document.getElementById("bqp-debug-reset-skips").innerHTML = "Reset skipped quotes";
+		}, 1000);
+	});
+	document.getElementById("bqp-debug-import-data").addEventListener("click", async function() {
+		try {
+			const data = atob(prompt("Please paste your data here:"));
+			// Test JSON
+			JSON.parse(data);
+			localStorage.setItem("bqp_data", data);
+			showNotification("Successfully imported data!", "success");
+		} catch(e) {
+			showNotification("Your import data seems to be incorrect", "error");
+		}
+	});
+	document.getElementById("bqp-debug-export-data").addEventListener("click", async function() {
+		const data = localStorage.getItem("bqp_data");
+		if(data == null) return;
+		const copyText = document.createElement("textarea");
+		copyText.value = btoa(data);
+		document.body.appendChild(copyText);
+		copyText.select();
+		document.execCommand("copy");
+		document.body.removeChild(copyText);
+		showNotification("Successfully copied data to clipboard!", "success");
 	});
 }
 
@@ -566,7 +598,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
         nextQuote();
     });
 			
-    setInterval(function() {
+    setInterval(async function() {
     	const monkeyMode = getMonkeyMode();
     	const monkeyState = getMonkeyState();
     	//console.log(monkeyMode);
@@ -587,11 +619,21 @@ document.addEventListener("DOMContentLoaded", async function (event) {
     		const timestamp = Date.now();
     		const rawWpm = parseFloat(document.querySelector("#result .morestats .raw .bottom").getAttribute('aria-label').match(/(\d+(\.\d+)?)/)[0]);
     		const wpm = parseFloat(document.querySelector("#result .stats .wpm .bottom").getAttribute('aria-label').match(/(\d+(\.\d+)?)/)[0]);
-    		// Increase completion amount
+			// Increase completion amount
 			localStorage.setItem("bqp_latest_completion_amount", parseInt(localStorage.getItem("bqp_latest_completion_amount")) + 1);
 			saveQuoteResult(monkeyMode.language, monkeyMode.mode2, acc, testDuration, timestamp, rawWpm, wpm);
     		console.log("Saved result " + monkeyMode.mode2);
+			await waitForAnyState(MonkeyStates.TYPING, 500);
+			localStorage.setItem("bqp_last_saved", "")
     	}
+		else if(monkeyMode.mode.toUpperCase() != MonkeyModes.QUOTE.toUpperCase() && monkeyState.toUpperCase() == MonkeyStates.RESULT.toUpperCase()) {
+			if(localStorage.getItem("bqp_last_saved") == "brentwashere") return;
+    		localStorage.setItem("bqp_last_saved", "brentwashere");
+			// Increase completion amount
+			localStorage.setItem("bqp_latest_completion_amount", parseInt(localStorage.getItem("bqp_latest_completion_amount")) + 1);
+			await waitForAnyState(MonkeyStates.TYPING, 500);
+			localStorage.setItem("bqp_last_saved", "");
+		}
     }, 500);
 });
 
@@ -792,6 +834,12 @@ async function refetchResults() {
 // _id:						Filled later
 function saveQuoteResult(language, id, acc, testDuration, timestamp, rawWpm, wpm, _id=null) {
 	let r = JSON.parse(localStorage.getItem("bqp_data"));
+	const oldResult = JSON.parse(JSON.stringify(r[language.toUpperCase()+"_"+id]));
+	// Compare wpm of oldresult and result to save
+	if(oldResult != undefined && oldResult.result != null && oldResult.result.wpm >= wpm) {
+		console.log("Old result has higher or equal wpm, skipping");
+		return;
+	}
 	r[language.toUpperCase()+"_"+id].result = {
 		"acc": acc,
 		"testDuration": testDuration,
@@ -800,6 +848,18 @@ function saveQuoteResult(language, id, acc, testDuration, timestamp, rawWpm, wpm
 		"wpm": wpm,
 		"_id": _id
 	};
+	// https://github.com/monkeytypegame/monkeytype/blob/b1fa682f32cb65d30936e330d84a679fe4f2f4dc/frontend/src/ts/test/pb-crown.ts#L25
+	const el = document.querySelector("#result .stats .wpm .crown");
+	// If the WPM improved, show the crown
+	// Currently disable check for previous result
+	//if(oldResult != undefined && oldResult.result != null) {
+	el.classList.remove("hidden");
+	el.classList.add("pending");
+	el.style.opacity = "1";
+	const oldWpm = oldResult.result ? oldResult.result.wpm : 0;
+	const wpmDiff = Math.round((wpm - oldWpm) * 100) / 100
+	el.setAttribute("aria-label", "You improved your PB by +"+wpmDiff+"wpm for quote "+id);
+	//}
 	localStorage.setItem("bqp_data", JSON.stringify(r));
 }
 
@@ -855,10 +915,14 @@ function addSkipQuote(lang, id) {
 	localStorage.setItem("bqp_skip_quotes", JSON.stringify(skipQuotes));
 }
 
-function removeAddSkipQuote(langandid) {
+function removeSkipQuote(langandid) {
 	let skipQuotes = JSON.parse(localStorage.getItem("bqp_skip_quotes") ?? "{}");
 	delete skipQuotes[langandid];
 	localStorage.setItem("bqp_skip_quotes", JSON.stringify(skipQuotes));
+}
+
+function resetSkipQuote() {
+	localStorage.setItem("bqp_skip_quotes", "[]");
 }
 
 function getNextQuoteIdForLanguage(language) {
