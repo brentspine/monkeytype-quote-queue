@@ -1,4 +1,4 @@
-const VERSION_ID = "3.4.0"
+const VERSION_ID = "3.4.1"
 
 const MonkeyStates = Object.freeze({
     LOADING: "Loading Page",
@@ -922,7 +922,7 @@ function removeSkipQuote(langandid) {
 }
 
 function resetSkipQuote() {
-	localStorage.setItem("bqp_skip_quotes", "[]");
+	localStorage.setItem("bqp_skip_quotes", "{}");
 }
 
 function getNextQuoteIdForLanguage(language) {
