@@ -4,7 +4,7 @@
 
 You can now download the latest release as a browser extension. 
 
-Chrome: https://chromewebstore.google.com/detail/monkeytype-quote-tracker/ibhkgncanjhainejhdkjcchpgjhlekia
+Chrome: https://chromewebstore.google.com/detail/monkeytype-quote-tracker/ibhkgncanjhainejhdkjcchpgjhlekia <br>
 Firefox: https://addons.mozilla.org/en-GB/firefox/addon/monkeytype-quote-tracker/
 
 ## Todo:
