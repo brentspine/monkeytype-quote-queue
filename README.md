@@ -11,6 +11,7 @@ Firefox: https://addons.mozilla.org/en-GB/firefox/addon/monkeytype-quote-tracker
 
  - Paste data from other source ✅
  - Skip Quote ✅
+ - Update README
  - Paste language tags
 
 ### Video Tutorial
