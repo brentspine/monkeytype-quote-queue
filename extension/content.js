@@ -1,4 +1,4 @@
-const VERSION_ID = "3.4.1"
+const VERSION_ID = "3.4.2"
 
 const MonkeyStates = Object.freeze({
     LOADING: "Loading Page",
@@ -947,8 +947,9 @@ function startQuoteWithId(quoteId, attempt=1) {
   if (quoteElement === null) {
       console.log(`Quote not loaded, attempt ${attempt}`);
       if(attempt >= 3) {
-          console.log(`Couldn't find quote with id ${quoteId} while activating. Next Quote failed after 3 attempts`);
-          alert(`Couldn't find quote with id ${quoteId} while activating: Next Quote failed after 3 attempts`);
+          console.log(`Couldn't find quote with id ${quoteId} while activating. Next Quote failed after 3 attempts. Skipped for now`);
+          alert(`Couldn't find quote with id ${quoteId} while activating: Next Quote failed after 3 attempts. Skipped for now`);
+	  addSkipQuote(getMonkeyMode().language, quoteId);
           return;
       }
       const quote_button = document.querySelector(`#testConfig button[mode="quote"]`);
